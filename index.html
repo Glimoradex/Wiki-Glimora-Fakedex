@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokedex de Glimora</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        /* Estilos personalizados */
+        body {
+            background-color: #1a1a2e; /* Cor de fundo escura para o site */
+            font-family: 'Inter', sans-serif; /* Fonte principal */
+            color: #e0e0e0; /* Cor do texto padrão */
+        }
+
+        /* Estilos para o rodapé */
+        footer {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .main-content-wrapper {
+            width: 100%;
+            max-width: 1280px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            flex-grow: 1;
+        }
+
+        #language-selector button, #language-selector-mobile button {
+            background-color: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 0.3rem 0.7rem;
+            margin: 0 0.2rem;
+            border-radius: 0.3rem;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #language-selector button:hover, #language-selector-mobile button:hover {
+            background-color: rgba(255,255,255,0.4);
+        }
+        #language-selector button.active, #language-selector-mobile button.active {
+            background-color: #fff;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        /* Estilos da Barra de Busca com efeito neon */
+        #search-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 1.5rem auto;
+            border-radius: 9999px;
+            padding: 2px; /* Espaço para o brilho da borda */
+            background: linear-gradient(120deg, #add8e6, #ffc0cb, #add8e6);
+            box-shadow: 0 0 8px rgba(173, 216, 230, 0.6), 0 0 12px rgba(255, 192, 203, 0.4);
+            transition: all 0.3s ease;
+        }
+        #search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border-radius: 9999px;
+            background-color: rgba(30, 30, 30, 0.8);
+            border: none;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        #search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        #search-input:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(255, 192, 203, 0.8);
+        }
+        #search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.7);
+            z-index: 10;
+        }
+
+        #pokedex-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            #pokedex-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+         @media (min-width: 1024px) {
+            #pokedex-grid {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            }
+        }
+         @media (min-width: 1280px) {
+            #pokedex-grid {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            }
+        }
+
+
+        .pokemon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .base-pokemon-card {
+            aspect-ratio: 1 / 1;
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            height: 100%;
+            transition: transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+        .base-pokemon-card:hover {
+            transform: translateY(-5px);
+            /* Efeito neon aprimorado */
+            box-shadow:
+                0 0 5px #fff,
+                0 0 10px #fff,
+                0 0 15px #ffc0cb,
+                0 0 20px #ffc0cb,
+                0 0 25px #87ceeb,
+                0 0 30px #87ceeb;
+        }
+
+        .pokemon-card {
+            background: #FFFFFF;
+            cursor: pointer;
+        }
+        
+        .pokemon-image-area {
+            position: relative; z-index: 1; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .pokemon-image-area img {
+            width: 100%; height: 100%; object-fit: cover; object-position: center;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
+            transform: scale(1.1); transition: transform 0.2s ease-in-out;
+        }
+        .pokemon-card:hover .pokemon-image-area img { transform: scale(1.15); }
+
+        .pokemon-info-block { margin-top: 0.5rem; padding: 0.5rem 0; width: 100%; color: #fff; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);}
+        .pokemon-info-block .pokemon-name-unlisted {
+            font-family: 'Orbitron', sans-serif; font-size: 1em; font-weight: bold;
+            text-transform: uppercase; color: #cccccc; line-height: 1.2;
+        }
+        .pokemon-info-block .pokemon-id-unlisted { font-size: 0.8em; color: #aaaaaa; }
+
+        .pokemon-name {
+            font-family: 'Orbitron', sans-serif; font-size: 1.2em; font-weight: bold;
+            text-transform: uppercase; margin-bottom: 0.1rem; line-height: 1.2;
+        }
+        .pokemon-types { display: flex; justify-content: center; gap: 0.5rem; }
+        .pokemon-type {
+            padding: 0.3rem 0.8rem; border-radius: 9999px; font-size: 0.9em;
+            font-weight: bold; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .unknown-pokemon-card {
+            background: linear-gradient(135deg, #232a34, #14181f);
+            border: 3px solid; border-image-slice: 1; border-width: 3px;
+            border-image-source: linear-gradient(to right, #EE82EE, #00BFFF, #EE82EE);
+            color: rgba(220, 220, 220, 0.8); cursor: default;
+        }
+        .unknown-pokemon-card .placeholder-content {
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            height: 100%; width: 100%; padding: 1rem; color: #fff;
+            text-shadow: 0 0 5px #00BFFF, 0 0 10px #EE82EE;
+        }
+        .unknown-pokemon-card .fa-question-circle {
+            font-size: 5em; color: rgba(200, 220, 255, 0.6);
+            text-shadow: 0 0 8px #EE82EE; margin-bottom: 0.5rem;
+        }
+        
+        /* Estilos do Seletor de Visualização e Navegação */
+        .view-button {
+            background-color: rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease-in-out;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
+            box-shadow: 0 0 8px rgba(255, 192, 203, 0.4), 0 0 8px rgba(135, 206, 235, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* Alinha conteúdo à esquerda */
+        }
+        .view-button:hover {
+            background-color: rgba(255,255,255,0.2);
+            border-color: #fff;
+            box-shadow: 0 0 18px #ffc0cb, 0 0 18px #87ceeb;
+        }
+        .view-button.active {
+            background-color: #fff;
+            color: #333;
+            border-color: #fff;
+            box-shadow: 0 0 10px #fff, 0 0 20px #ffc0cb, 0 0 30px #87ceeb;
+        }
+        .view-button svg {
+            filter: drop-shadow(0 0 5px #ffc0cb) drop-shadow(0 0 5px #87ceeb);
+            transition: filter 0.3s ease;
+            flex-shrink: 0; /* Impede que o ícone encolha */
+        }
+        .view-button:hover svg {
+            filter: drop-shadow(0 0 10px #ffc0cb) drop-shadow(0 0 10px #87ceeb);
+        }
+
+        #back-to-home-btn {
+            padding: 0.5rem 1.5rem;
+            font-size: 1rem;
+            width: auto;
+            justify-content: center;
+        }
+        /* MELHORIA: Ícone de voltar adicionado para consistência visual */
+        #back-to-home-btn svg {
+            display: inline-block;
+            width: 1.2rem;
+            height: 1.2rem;
+            margin-right: 0.5rem;
+        }
+
+        /* Estilos da Galeria TCG */
+        #featured-card-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            min-height: 400px;
+        }
+        #featured-card-image {
+            max-width: 300px;
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4), 0 0 20px #ffc0cb, 0 0 20px #87ceeb;
+            transition: transform 0.3s ease;
+        }
+        #thumbnail-carousel-wrapper {
+            position: relative;
+            padding: 0.5rem 0;
+        }
+        #thumbnail-carousel {
+            display: flex;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding-bottom: 1rem;
+        }
+        .thumbnail-card {
+            flex: 0 0 auto;
+            width: 80px;
+            cursor: pointer;
+            border-radius: 8px;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+            opacity: 0.6;
+        }
+        .thumbnail-card:hover {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        .thumbnail-card.active {
+            border-color: #ffc0cb;
+            box-shadow: 0 0 15px #ffc0cb;
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        .thumbnail-card img {
+            width: 100%;
+            border-radius: 5px;
+        }
+        /* Custom Scrollbar for TCG Carousel */
+        #thumbnail-carousel::-webkit-scrollbar {
+            height: 8px;
+        }
+        #thumbnail-carousel::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        #thumbnail-carousel::-webkit-scrollbar-thumb {
+            background: #87ceeb;
+            border-radius: 10px;
+        }
+        #thumbnail-carousel::-webkit-scrollbar-thumb:hover {
+            background: #ffc0cb;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(10, 20, 30, 0.85);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease; padding: 1rem;
+        }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+
+        .modal-content {
+            background-color: #1f2937; border-radius: 1rem; border: 2px solid #EE82EE;
+            padding: 1.5rem; width: 100%; max-width: 800px; max-height: 90vh;
+            overflow-y: auto; position: relative; color: #e0e0e0;
+            box-shadow: 0 0 25px rgba(238, 130, 238, 0.5), 0 0 15px rgba(0, 191, 255, 0.5);
+            display: flex; flex-direction: column; gap: 1rem;
+        }
+
+        .modal-close-button {
+            position: absolute; top: 0.75rem; right: 0.75rem; background: transparent;
+            border: none; font-size: 1.8rem; color: #EE82EE;
+            cursor: pointer; transition: transform 0.2s ease, color 0.2s ease; z-index: 1020;
+        }
+        .modal-close-button:hover { transform: rotate(90deg) scale(1.1); color: #00BFFF; }
+
+        .modal-nav-button {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background-color: rgba(0, 191, 255, 0.4); color: #fff;
+            border: 1px solid #EE82EE; border-radius: 50%;
+            width: 40px; height: 40px; font-size: 1.5rem;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; z-index: 1010;
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .modal-nav-button:hover {
+            background-color: rgba(238, 130, 238, 0.6);
+            border-color: #00BFFF; transform: translateY(-50%) scale(1.1);
+        }
+        .modal-prev-button { left: calc(50% - 400px - 20px - 20px); }
+        .modal-next-button { right: calc(50% - 400px - 20px - 20px); }
+        
+        @media (max-width: 900px) {
+            .modal-prev-button { left: 10px; }
+            .modal-next-button { right: 10px; }
+        }
+        @media (max-width: 500px) {
+            .modal-nav-button { width: 35px; height: 35px; font-size: 1.2rem; }
+            .modal-prev-button { left: 5px; }
+            .modal-next-button { right: 5px; }
+        }
+
+        .modal-header-section {
+            display: flex; align-items: baseline; flex-wrap: wrap;
+            gap: 0.5rem; padding-bottom: 0.75rem; border-bottom: 2px solid #00BFFF;
+        }
+        .modal-pokemon-name {
+            font-family: 'Orbitron', sans-serif; font-size: 2em; font-weight: bold;
+            color: #fff; text-transform: uppercase; background-color: #000;
+            padding: 0.3rem 0.8rem; border-radius: 0.5rem; line-height: 1.2;
+            border: 1px solid #EE82EE; box-shadow: 0 0 8px #00BFFF;
+        }
+        .modal-pokemon-number { font-size: 1.2em; color: #00BFFF; font-weight: 600; text-shadow: 0 0 3px #EE82EE; }
+
+        .modal-main-content { display: flex; flex-direction: column; gap: 1.5rem; }
+        @media (min-width: 640px) { .modal-main-content { flex-direction: row; } }
+
+        .modal-image-types {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 1rem; flex-shrink: 0; width: 100%;
+        }
+        @media (min-width: 640px) { .modal-image-types { width: 280px; } }
+
+        .modal-image-wrapper {
+            width: 100%;
+            max-width: 280px;
+            aspect-ratio: 1 / 1;
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .modal-pokemon-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transform: scale(1.35);
+            object-position: center;
+        }
+
+        .modal-pokemon-image[data-pokemon-id="020"] { transform: scale(1.5); }
+        .modal-pokemon-image[data-pokemon-id="022"] { transform: scale(2.5); }
+        .modal-pokemon-image[data-pokemon-id="023"],
+        .modal-pokemon-image[data-pokemon-id="024"],
+        .modal-pokemon-image[data-pokemon-id="025"],
+        .modal-pokemon-image[data-pokemon-id="026"] { transform: scale(1.25); }
+        .modal-pokemon-image[data-pokemon-id="027"] { transform: scale(1.5); }
+        .modal-pokemon-image[data-pokemon-id="028"] { transform: scale(1.2); }
+        .modal-pokemon-image[data-pokemon-id="031"] { transform: scale(1.1); }
+        .modal-pokemon-image[data-pokemon-id="032"] { transform: scale(1.0); }
+        .modal-pokemon-image[data-pokemon-id="033"] { transform: scale(1.15); }
+
+
+        .modal-pokemon-types { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; }
+
+        .modal-details-description { flex-grow: 1; display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; }
+        .modal-section-title {
+            font-size: 1.3em; font-weight: bold; color: #EE82EE;
+            margin-bottom: 0.5rem; border-bottom: 2px solid #00BFFF;
+            padding-bottom: 0.4rem; text-shadow: 0 0 4px #000;
+        }
+        .modal-pokemon-lore { font-size: 0.95em; line-height: 1.6; text-align: justify; color: #c0c0c0; }
+
+        .modal-data-row { display: flex; justify-content: space-around; gap: 1rem; margin-bottom: 1rem;}
+        .modal-detail-item {
+            background-color: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 0.5rem;
+            text-align: center; border: 1px solid #00BFFF; flex-grow: 1;
+        }
+        .modal-detail-item strong { display: block; font-size: 0.9em; color: #EE82EE; margin-bottom: 0.2rem; }
+        .modal-detail-item span { font-size: 0.85em; color: #c0c0c0; }
+
+        .modal-ability-block {
+            background-color: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 0.5rem;
+            text-align: center; border: 1px solid #00BFFF;
+        }
+        .modal-ability-block strong {display: block; font-size: 0.9em; color: #EE82EE; margin-bottom: 0.2rem;}
+        .modal-ability-block .ability-name { font-size: 1em; color: #fff; font-weight: bold;}
+        .modal-ability-block .ability-desc { font-size: 0.85em; color: #c0c0c0; }
+
+        .modal-weakness-section { margin-top: 0.5rem; text-align: center;}
+        .weakness-title { font-weight: bold; color: #EE82EE; margin-bottom: 0.3rem;}
+        .weakness-types { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.4rem;}
+
+        .modal-stats-section { margin-top: 1rem; }
+        .modal-stats-list { display: flex; flex-direction: column; gap: 0.6rem; }
+        .stat-item { display: flex; align-items: center; gap: 0.75rem; }
+        .stat-label {
+            font-weight: bold; width: 100px; text-align: right;
+            color: #00BFFF; font-size: 0.9em; text-shadow: 0 0 2px #000;
+        }
+        .stat-bar-container {
+            flex-grow: 1; background-color: rgba(0,0,0,0.5); border-radius: 9999px;
+            height: 12px; display: flex; align-items: center;
+            position: relative; overflow: hidden; border: 1px solid #EE82EE;
+        }
+        .stat-bar {
+            height: 100%; border-radius: 9999px; transition: width 0.5s ease-out;
+            box-shadow: inset 0 0 3px rgba(0,0,0,0.5);
+        }
+        .stat-bar.low { background-image: linear-gradient(to right, #f44336, #ff7961); }
+        .stat-bar.medium { background-image: linear-gradient(to right, #ffc107, #ffe082); }
+        .stat-bar.high { background-image: linear-gradient(to right, #4caf50, #81c784); }
+        .stat-bar.very-high { background-image: linear-gradient(to right, #2196f3, #64b5f6); }
+        .stat-value {
+            position: absolute; right: 0.5rem; font-size: 0.75em;
+            font-weight: bold; color: #fff; text-shadow: 1px 1px 1px #000;
+            line-height: 12px;
+        }
+
+        /* --- Layout Responsivo para Navegação --- */
+        
+        /* Desktop: Coluna na Direita */
+        @media (min-width: 1024px) {
+            #desktop-nav-container {
+                /* CORREÇÃO: Revertido para 'absolute' para ficar estático na capa */
+                position: absolute; 
+                top: 0;
+                right: 0;
+                height: 100vh;
+                display: flex;
+                align-items: center;
+                z-index: 20;
+                padding-right: 3rem;
+                /* Removido pointer-events para garantir que os botões sejam sempre clicáveis */
+            }
+            .navigation-column {
+                background: rgba(26, 26, 46, 0.6);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border: 2px solid rgba(238, 130, 238, 0.5);
+                border-radius: 1.5rem;
+                padding: 2rem 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+                align-items: center;
+                box-shadow:
+                    0 0 15px rgba(238, 130, 238, 0.6),
+                    0 0 25px rgba(238, 130, 238, 0.4),
+                    0 0 15px rgba(0, 191, 255, 0.6),
+                    0 0 25px rgba(0, 191, 255, 0.4);
+            }
+            #main-navigation {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 1.5rem;
+            }
+            #main-navigation .view-button {
+                width: 280px;
+                font-size: 1.5rem;
+                padding: 1rem;
+            }
+            #main-navigation .view-button svg {
+                width: 2.5rem;
+                height: 2.5rem;
+                margin-right: 1rem;
+            }
+        }
+
+        /* Mobile: Botões na parte inferior */
+        @media (max-width: 1023px) {
+            #language-selector-mobile {
+                position: absolute;
+                top: 0.75rem;
+                right: 1rem;
+                z-index: 30;
+            }
+             #language-selector-mobile button {
+                padding: 0.2rem 0.5rem;
+                font-size: 0.8rem;
+             }
+
+            #main-navigation-mobile .view-button {
+                width: 170px;
+                font-size: 0.9rem;
+                padding: 0.7rem 1rem;
+            }
+            #main-navigation-mobile .view-button svg {
+                width: 1.3rem;
+                height: 1.3rem;
+                margin-right: 0.6rem;
+            }
+        }
+        
+        /* Estilos da Loja */
+        .product-card {
+            background: linear-gradient(135deg, #232a34, #14181f);
+            border-radius: 1rem;
+            overflow: hidden;
+            text-decoration: none;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #00BFFF;
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 0 25px rgba(238, 130, 238, 0.6), 0 0 15px rgba(0, 191, 255, 0.6);
+        }
+
+        .product-image-wrapper {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background-color: #fff;
+            overflow: hidden;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-image {
+            transform: scale(1.05);
+        }
+
+        .product-info {
+            padding: 1rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: space-between;
+        }
+
+        .product-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1em;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .product-pricing {
+            margin: 0.5rem 0;
+            font-weight: bold;
+        }
+
+        .original-price {
+            text-decoration: line-through;
+            color: #9ca3af; /* gray-400 */
+            font-size: 0.9em;
+            margin-right: 0.5rem;
+        }
+
+        .discount-price {
+            color: #f87171; /* red-400 */
+            font-size: 1.1em;
+        }
+
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    
+    <header id="cover-section" class="relative w-full h-screen flex items-center justify-center">
+        <picture class="absolute top-0 left-0 w-full h-full z-0">
+            <source media="(min-width: 768px)" srcset="https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@d867be58dd73bb51b45db8bfe0115d09c9e352f4/capa%20site%20desktop%20%20(1).png">
+            <img src="https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@d867be58dd73bb51b45db8bfe0115d09c9e352f4/capa%20site%20mobile%20%20(Story).png" alt="Capa da Região de Glimora" class="w-full h-full object-cover">
+        </picture>
+        
+        <div id="desktop-nav-container" class="hidden lg:flex">
+            <div class="navigation-column h-full max-h-[90vh] py-8">
+                <div id="language-selector" class="w-full flex justify-center">
+                    <button data-lang="pt" class="lang-btn">PT-BR</button>
+                    <button data-lang="en" class="lang-btn">EN</button>
+                    <button data-lang="es" class="lang-btn">ES</button>
+                </div>
+                <div id="main-navigation" class="flex-grow flex flex-col justify-center items-center gap-6">
+                    <button id="nav-pokedex-btn-cover" class="view-button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12H22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span data-translate="navPokedex">Pokédex</span>
+                    </button>
+                    <button id="nav-tcg-btn-cover" class="view-button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M3 9h18M9 21V9"/></svg>
+                        <span data-translate="navTcg">TCG</span>
+                    </button>
+                    <button id="nav-shop-btn-cover" class="view-button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                        <span data-translate="navShop">Loja</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:hidden relative z-10 h-full w-full flex flex-col items-center p-4">
+            <div id="language-selector-mobile">
+                <button data-lang="pt" class="lang-btn">PT-BR</button>
+                <button data-lang="en" class="lang-btn">EN</button>
+                <button data-lang="es" class="lang-btn">ES</button>
+            </div>
+            <div class="absolute top-[30%] w-full flex flex-col items-center gap-4">
+                <div id="main-navigation-mobile" class="flex flex-col items-center gap-3">
+                    <button id="nav-pokedex-btn-cover-mobile" class="view-button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12H22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span data-translate="navPokedex">Pokédex</span>
+                    </button>
+                    <button id="nav-tcg-btn-cover-mobile" class="view-button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M3 9h18M9 21V9"/></svg>
+                        <span data-translate="navTcg">TCG</span>
+                    </button>
+                    <button id="nav-shop-btn-cover-mobile" class="view-button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                        <span data-translate="navShop">Loja</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content-wrapper">
+        <main class="container mx-auto p-4 md:p-6 flex-grow">
+            
+            <section id="welcome-section" class="text-center text-white py-10">
+                <h1 data-translate="welcomeTitle" class="text-4xl md:text-5xl font-bold font-orbitron mb-4" style="text-shadow: 0 0 15px #87ceeb, 0 0 10px #ffc0cb;">Bem-vindo à Glimora</h1>
+                <div class="max-w-4xl mx-auto">
+                    <p data-translate="welcomeSubtitle" class="text-2xl font-bold font-orbitron mb-8">
+                        Seja bem-vindo à sua próxima jornada. Glimora está cheia de histórias esperando para serem contadas — e a sua pode começar agora.
+                    </p>
+                </div>
+            </section>
+
+            <div id="content-container" style="display: none;">
+                <div class="w-full flex justify-end mb-6">
+                    <div class="w-auto">
+                         <button id="back-to-home-btn" class="view-button">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                             <span data-translate="backToHome">Voltar</span>
+                         </button>
+                    </div>
+                </div>
+                <div id="pokedex-container" style="display: none;">
+                    <section id="search-container">
+                        <i id="search-icon" class="fas fa-search"></i>
+                        <input type="text" id="search-input" data-translate-placeholder="searchPlaceholder">
+                    </section>
+                    <section id="pokedex-grid" class="mt-6 md:mt-8"></section>
+                </div>
+
+                <div id="tcg-container" style="display: none;">
+                    <div id="featured-card-wrapper">
+                        <img id="featured-card-image" src="" alt="Featured TCG Card">
+                    </div>
+                    <div id="thumbnail-carousel-wrapper">
+                        <div id="thumbnail-carousel" class="space-x-4">
+                            </div>
+                    </div>
+                </div>
+
+                <div id="shop-container" style="display: none;">
+                    <section id="shop-section" class="my-6 md:my-8"></section>
+                </div>
+                
+            </div>
+
+        </main>
+    </div>
+
+    <footer class="p-4 md:p-6 text-center shadow-lg mt-auto">
+        <div class="container mx-auto">
+            <p class="text-sm md:text-base text-white opacity-80" data-translate="footerText">&copy; 2025 Pokedex de Glimora. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <div id="pokemonModal" class="modal-overlay" tabindex="-1" aria-labelledby="modalPokemonNameLabel" aria-hidden="true">
+        <div class="modal-content" role="dialog" aria-modal="true">
+            <button class="modal-close-button" id="closeModalBtn" aria-label="Fechar modal">&times;</button>
+            <button class="modal-nav-button modal-prev-button" id="prevPokemonBtn" aria-label="Fakémon Anterior">&lt;</button>
+            <button class="modal-nav-button modal-next-button" id="nextPokemonBtn" aria-label="Próximo Fakémon">&gt;</button>
+
+            <div class="modal-header-section">
+                <h2 id="modalPokemonName" class="modal-pokemon-name" aria-live="polite"></h2>
+                <p id="modalPokemonNumber" class="modal-pokemon-number"></p>
+            </div>
+
+            <div class="modal-main-content">
+                <div class="modal-image-types">
+                    <div id="modal-image-wrapper" class="modal-image-wrapper">
+                        </div>
+                    <div id="modalPokemonTypes" class="modal-pokemon-types"></div>
+                    <div id="modal-weakness-section" class="modal-weakness-section">
+                        </div>
+                </div>
+
+                <div class="modal-details-description">
+                    <div class="modal-section">
+                        <h3 class="modal-section-title" data-translate="modalDataTitle">Dados</h3>
+                        <div class="modal-data-row">
+                            <div class="modal-detail-item">
+                                <strong data-translate="modalHeightLabel">Altura:</strong> <span id="modalPokemonHeight"></span>
+                            </div>
+                            <div class="modal-detail-item">
+                                <strong data-translate="modalWeightLabel">Peso:</strong> <span id="modalPokemonWeight"></span>
+                            </div>
+                        </div>
+                        <div class="modal-ability-block">
+                            <strong data-translate="modalAbilityLabel">Habilidade:</strong>
+                            <span id="modalPokemonAbility" class="ability-name"></span><br>
+                            <span id="modalPokemonAbilityDescription" class="ability-desc"></span>
+                        </div>
+                    </div>
+
+                    <div class="modal-section">
+                        <h3 class="modal-section-title" data-translate="modalDescriptionTitle">Descrição</h3>
+                        <p id="modalPokemonLore" class="modal-pokemon-lore"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-stats-section">
+                <h3 class="modal-section-title" data-translate="modalBaseStatsTitle">Base Stats</h3>
+                <div class="modal-stats-list">
+                    <div class="stat-item">
+                        <span class="stat-label" data-translate="statHP">HP</span>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar" id="statHpBar"></div>
+                            <span class="stat-value" id="statHp"></span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label" data-translate="statAttack">Ataque</span>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar" id="statAttackBar"></div>
+                            <span class="stat-value" id="statAttack"></span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label" data-translate="statDefense">Defesa</span>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar" id="statDefenseBar"></div>
+                            <span class="stat-value" id="statDefense"></span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label" data-translate="statSpAttack">Ataque Esp.</span>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar" id="statSpecialAttackBar"></div>
+                            <span class="stat-value" id="statSpecialAttack"></span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label" data-translate="statSpDefense">Defesa Esp.</span>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar" id="statSpecialDefenseBar"></div>
+                            <span class="stat-value" id="statSpecialDefense"></span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label" data-translate="statSpeed">Velocidade</span>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar" id="statSpeedBar"></div>
+                            <span class="stat-value" id="statSpeed"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =================================================================================
+        // INÍCIO DO SCRIPT - ORGANIZAÇÃO E MELHORIAS APLICADAS
+        // =================================================================================
+        
+        // ---------------------------------------------------------------------------------
+        // 1. DADOS E CONFIGURAÇÕES GLOBAIS
+        // ---------------------------------------------------------------------------------
+
+        // Objeto de traduções para a interface do usuário
+        const uiTranslations = {
+            pt: {
+                pageTitle: "Pokedex de Glimora",
+                welcomeTitle: "Bem-vindo à Glimora",
+                welcomeSubtitle: "Seja bem-vindo à sua próxima jornada. Glimora está cheia de histórias esperando para serem contadas — e a sua pode começar agora.",
+                searchPlaceholder: "Buscar por nome ou nº...",
+                footerText: "&copy; 2025 Pokedex de Glimora. Todos os direitos reservados.",
+                navPokedex: "Pokédex",
+                navTcg: "TCG",
+                navShop: "Loja",
+                backToHome: "Voltar",
+                shopViewButton: "Ver na Loja",
+                tcgComingSoon: "Em Desenvolvimento",
+                modalDataTitle: "Dados",
+                modalDescriptionTitle: "Descrição",
+                modalBaseStatsTitle: "Base Stats",
+                modalHeightLabel: "Altura:",
+                modalWeightLabel: "Peso:",
+                modalAbilityLabel: "Habilidade:",
+                weaknessTitle: "Fraquezas:",
+                statHP: "HP",
+                statAttack: "Ataque",
+                statDefense: "Defesa",
+                statSpAttack: "Ataque Esp.",
+                statSpDefense: "Defesa Esp.",
+                statSpeed: "Velocidade",
+                unlistedFakemon: "Não Catalogado",
+                typeNames: {
+                    Grama: "Grama", Fogo: "Fogo", Água: "Água", Venenoso: "Venenoso",
+                    Normal: "Normal", Lutador: "Lutador", Voador: "Voador", Fada: "Fada",
+                    Inseto: "Inseto", Psíquico: "Psíquico", Elétrico: "Elétrico", Terra: "Terra", Pedra: "Pedra", Fantasma: "Fantasma", Gelo: "Gelo", Dragão: "Dragão", Sombrio: "Sombrio", Aço: "Aço"
+                }
+            },
+            en: {
+                pageTitle: "Glimora Pokedex",
+                welcomeTitle: "Welcome to Glimora",
+                welcomeSubtitle: "Welcome to your next journey. Glimora is full of stories waiting to be told — and yours can begin now.",
+                searchPlaceholder: "Search by name or #...",
+                footerText: "&copy; 2025 Glimora Pokedex. All rights reserved.",
+                navPokedex: "Pokédex",
+                navTcg: "TCG",
+                navShop: "Shop",
+                backToHome: "Back",
+                shopViewButton: "View in Shop",
+                tcgComingSoon: "In Development",
+                modalDataTitle: "Data",
+                modalDescriptionTitle: "Description",
+                modalBaseStatsTitle: "Base Stats",
+                modalHeightLabel: "Height:",
+                modalWeightLabel: "Weight:",
+                modalAbilityLabel: "Ability:",
+                weaknessTitle: "Weaknesses:",
+                statHP: "HP",
+                statAttack: "Attack",
+                statDefense: "Defense",
+                statSpAttack: "Sp. Attack",
+                statSpDefense: "Sp. Defense",
+                statSpeed: "Speed",
+                unlistedFakemon: "Unlisted",
+                typeNames: {
+                    Grama: "Grass", Fogo: "Fire", Água: "Water", Venenoso: "Poison",
+                    Normal: "Normal", Lutador: "Fighting", Voador: "Flying", Fada: "Fairy",
+                    Inseto: "Bug", Psíquico: "Psychic", Elétrico: "Electric", Terra: "Ground", Pedra: "Rock", Fantasma: "Ghost", Gelo: "Ice", Dragão: "Dragon", Sombrio: "Dark", Aço: "Steel"
+                }
+            },
+            es: {
+                pageTitle: "Pokedex de Glimora",
+                welcomeTitle: "Bienvenido a Glimora",
+                welcomeSubtitle: "Bienvenido a tu próxima jornada. Glimora está llena de historias esperando ser contadas — y la tuya puede comenzar ahora.",
+                searchPlaceholder: "Buscar por nombre o nº...",
+                footerText: "&copy; 2025 Pokedex de Glimora. Todos los direitos reservados.",
+                navPokedex: "Pokédex",
+                navTcg: "TCG",
+                navShop: "Tienda",
+                backToHome: "Volver",
+                shopViewButton: "Ver en la Tienda",
+                tcgComingSoon: "En Desarrollo",
+                modalDataTitle: "Datos",
+                modalDescriptionTitle: "Descripción",
+                modalBaseStatsTitle: "Estadísticas Base",
+                modalHeightLabel: "Altura:",
+                modalWeightLabel: "Peso:",
+                modalAbilityLabel: "Habilidad:",
+                weaknessTitle: "Debilidades:",
+                statHP: "PS",
+                statAttack: "Ataque",
+                statDefense: "Defensa",
+                statSpAttack: "Ataque Esp.",
+                statSpDefense: "Defensa Esp.",
+                statSpeed: "Velocidad",
+                unlistedFakemon: "No Catalogado",
+                typeNames: {
+                    Grama: "Planta", Fogo: "Fuego", Água: "Agua", Venenoso: "Veneno",
+                    Normal: "Normal", Lutador: "Lucha", Voador: "Volador", Fada: "Hada",
+                    Inseto: "Bicho", Psíquico: "Psíquico", Elétrico: "Eléctrico", Terra: "Tierra", Pedra: "Roca", Fantasma: "Fantasma", Gelo: "Hielo", Dragão: "Dragón", Sombrio: "Siniestro", Aço: "Acero"
+                }
+            }
+        };
+
+        // --- DADOS DOS FAKÉMONS COM TRADUÇÕES ---
+        const fakemons = [
+            { id: '001', name: { pt: 'Slomoss', en: 'Slomoss', es: 'Slomoss' }, types: ['Grama'], tcgCardUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@c97d0cc04bb41698e700ddae23f0198b9031a819/TCG%20SLOMOSS.png', description: { pt: 'É um Pokémon inicial do tipo Grama da região de Glimora, o pokémon preguiça vive em florestas úmidas e quentes, dormindo nos topos das árvores. Sua flor tem um aroma doce que acalma. Com status equilibrados, é um parceiro estratégico para treinadores pacientes.', en: 'It is a Grass-type starter Pokémon from the Glimora region. This sloth Pokémon lives in humid and hot forests, sleeping in the treetops. Its flower has a sweet aroma that calms. With balanced stats, it is a strategic partner for patient trainers.', es: 'Es un Pokémon inicial de tipo Planta de la región de Glimora. Este Pokémon perezoso vive em bosques húmedos y cálidos, durmiendo en las copas de los árboles. Su flor tiene um aroma doce que calma. Con estadísticas equilibradas, es un compañero estratégico para entrenadores pacientes.' }, height: "0.6 m (1'11'')", weight: "8.3 kg (18.3 lbs)", ability: { pt: "Overgrowth Blanket", en: "Overgrowth Blanket", es: "Manto Exuberante" }, abilityDescription: { pt: "Enquanto Slomoss estiver em campo, a vegetação se intensifica. No fim de cada turno, ele e aliados do tipo Grama recuperam 1/16 de HP. Se estiver com Velocidade reduzida ou paralisado, seus movimentos do tipo Grama causam 30% a mais de dano.", en: "While Slomoss is on the field, vegetation intensifies. At the end of each turn, it and Grass-type allies recover 1/16 of HP. If its Speed is reduced or it's paralyzed, its Grass-type moves deal 30% more damage.", es: "Mientras Slomoss está en el campo, la vegetação se intensifica. Al final de cada turno, él y los aliados de tipo Planta recuperam 1/16 de PS. Si su Velocidad se reduce o está paralizado, sus movimientos de tipo Planta causan un 30% más de daño." }, baseStats: { hp: 45, attack: 50, defense: 55, specialAttack: 60, specialDefense: 65, speed: 40 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Card%20Slomoss.jpg', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Slomoss%20Gif.gif' },
+            { id: '002', name: { pt: 'Mosslax', en: 'Mosslax', es: 'Mosslax' }, types: ['Grama'], tcgCardUrl: null, description: { pt: 'Mosslax adora se esticar sob o sol, acumulando energia na enorme flor sobre sua cabeça. Seu aroma suave e adocicado embriaga os sentidos dos Pokémon ao redor, deixando-os sonolentos e atordoados. Quase nunca se move, mas, quando ameaçado, libera uma explosão de pólen para confundir predadores antes de escapar preguiçosamente. Apesar de sua aparência dócil, a energia acumulada em seu corpo pode se transformar em ataques surpreendentemente potentes. Ele costuma ser encontrado em clareiras silenciosas, dormindo entre as raízes de árvores cobertas de musgo.', en: 'Mosslax loves to stretch under the sun, accumulating energy in the huge flower on its head. Its soft, sweet aroma intoxicates the senses of surrounding Pokémon, leaving them sleepy and dazed. It rarely moves, but when threatened, it releases a burst of pollen to confuse predators before lazily escaping. Despite its docile appearance, the energy stored in its body can turn into surprisingly powerful attacks. It is often found in quiet clearings, sleeping among the roots of moss-covered trees.', es: 'A Mosslax le encanta estirarse bajo el sol, acumulando energía na enorme flor sobre su cabeza. Su aroma suave y dulzón embriaga los sentidos de los Pokémon circundantes, dejándolos somnolientos y aturdidos. Rara vez se mueve, pero quando se sente amenazado, libera uma explosão de polen para confundir a los depredadores antes de escapar perezosamente. A pesar de su apariencia dócil, la energía acumulada em seu corpo pode se transformar em ataques sorprendentemente potentes. Se le suele encontrar en claros tranquilos, durmiendo entre las raízes de árboles cubiertos de musgo.' }, height: "1.1 m (3'7'')", weight: "26.4 kg (58.2 lbs)", ability: {pt: "Overgrowth Blanket", en: "Overgrowth Blanket", es: "Manto Exuberante"}, abilityDescription: { pt: "Mesma habilidade de Slomoss, com recuperação de HP e boost quando está debilitado.", en: "Same ability as Slomoss, with HP recovery and a boost when weakened.", es: "Misma habilidad que Slomoss, con recuperação de PS y un impulso quando está debilitado." }, baseStats: { hp: 85, attack: 70, defense: 80, specialAttack: 60, specialDefense: 70, speed: 35 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Mosslax%20card.jpg', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Mosslax%20Gif.gif' },
+            { id: '003', name: {pt: 'Bellamoss', en: 'Bellamoss', es: 'Bellamoss'}, types: ['Grama', 'Venenoso'], tcgCardUrl: null, description: { pt: 'Bellamoss exala um perfume enigmático que manipula emoções - alegria, tristeza e até desprezo. Graciosa, porém letal, derrota seus adversários com movimentos fluidos e um veneno que atinge tanto o corpo quanto o emocional. Muitos treinadores dizem que o cheiro dela permanece no air mesmo após a luta. Com pétalas que oscilam ao menor sopro de vento e olhos que parecem ler a alma, Bellamoss é símbolo de beleza perigosa nas florestas de Glimora. Dizem que até Pokémon selvagens evitam cruzar seu caminho durante a floração.', en: 'Bellamoss exudes an enigmatic perfume that manipulates emotions - joy, sadness, and even contempt. Graceful yet lethal, it defeats its opponents with fluid movements and a poison that affects both body and emotions. Many trainers say its scent lingers in the air even after a battle. With petals that sway at the slightest breeze and eyes that seem to read the soul, Bellamoss is a symbol of dangerous beauty in the forests of Glimora. It is said that even wild Pokémon avoid crossing its path during its bloom.', es: 'Bellamoss exuda un perfume enigmático que manipula las emociones: alegría, tristeza e incluso desprecio. Elegante pero letal, derrota a sus oponentes con movimientos fluidos y un veneno que afecta tanto al cuerpo como a las emociones. Muchos entrenadores dicen que su aroma persiste en el aire incluso después de una batalla. Con pétalos que se mecen con la más mínima brisa y ojos que parecen leer el alma, Bellamoss es un símbolo de belleza peligrosa en los bosques de Glimora. Se dice que incluso los Pokémon selvagens evitan cruzarse en su camino durante su floración.' }, height: "1.5 m (4'11'')", weight: "42.3 kg (93.3 lbs)", ability: {pt: "Aroma Veil", en: "Aroma Veil", es: "Velo Aroma"}, abilityDescription: { pt: "Impede que Bellamoss e seus aliados sejam afetados por efeitos que limitem ações, como Taunt, Encore, Disable e afins protegendo tanto a mente quanto o coração.", en: "Prevents Bellamoss and its allies from being affected by effects that limit actions, such as Taunt, Encore, Disable, and the like, protecting both mind and heart.", es: "Evita que Bellamoss y sus aliados se vean afectados por efectos que limitan las acciones, como Mofa, Otra Vez, Anulación y similares, protegiendo tanto la mente como el corazón." }, baseStats: { hp: 80, attack: 65, defense: 75, specialAttack: 105, specialDefense: 95, speed: 90 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Card%20Bellamoss.jpg', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Bellamoss%20Gif.gif' },
+            { id: '004', name: {pt: 'Charcub', en: 'Charcub', es: 'Charcub'}, types: ['Fogo'], tcgCardUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@c97d0cc04bb41698e700ddae23f0198b9031a819/TCG%20CHARCUB.png', description: { pt: 'Charcub absorve a luz do sol para alimentar sua energia inesgotável durante o dia. Curioso e corajoso, explora seu território sem medo, soltando pequenas fagulhas a cada passo. À noite, seu corpo irradia um calor suave e constante, atraindo outros Pokémon que se aconchegam ao seu redor em busca de conforto. Apesar do tamanho, já demonstra instintos de liderança e um espírito ardente que promete se tornar uma chama indomável em sua evolução.', en: 'Charcub absorbs sunlight to fuel its inexhaustible energy during the day. Curious and brave, it explores its territory without fear, releasing small sparks with each step. At night, its body radiates a soft, constant warmth, attracting other Pokémon that snuggle around it for comfort. Despite its size, it already shows leadership instincts and a fiery spirit that promises to become an indomitable flame in its evolution.', es: 'Charcub absorbe la luz solar para alimentar su inagotable energía durante el día. Curioso y valiente, explora su territorio sin miedo, soltando pequenas chispas a cada passo. Por la noche, su corpo irradia um calor suave y constante, atrayendo a outros Pokémon que se acurrucan a su alrededor en busca de consuelo. A pesar de su tamaño, ya demuestra instintos de liderazgo y um espírito ardente que promete convertirse en una llama indomable en su evolución.' }, height: "0.6 m (2'0'')", weight: "7.5 kg (18.3 lbs)", ability: {pt: "Solar Spirit", en: "Solar Spirit", es: "Espíritu Solar"}, abilityDescription: { pt: "Durante clima ensolarado, Charcub recupera um pouco de HP no final de cada turno, como se seu corpo estivesse recarregando diretamente da luz solar.", en: "During sunny weather, Charcub recovers a little HP at the end of each turn, as if its body were recharging directly from sunlight.", es: "Durante el clima soleado, Charcub recupera un poco de PS al final de cada turno, como si su cuerpo se estuviera recargando directamente de la luz solar." }, baseStats: { hp: 50, attack: 65, defense: 45, specialAttack: 60, specialDefense: 40, speed: 70 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/charcub%20card.jpg', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Charcub%20Gif.gif' },
+            { id: '005', name: {pt: 'Embear', en: 'Embear', es: 'Embear'}, types: ['Fogo', 'Lutador'], tcgCardUrl: null, description: { pt: 'Embear vive em constante combustão emocional. Quando se empolga - seja em batalhas ou brincadeiras seu corpo irradia calor tão intenso que deixa pegadas incandescentes por onde passa. Cheio de energia, ele encara qualquer desafio de frente, mesmo que isso signifique bater de frente com Pokémon muito más poderosos. Apesar de teimoso, cria um vínculo feroz com treinadores que conseguem conquistar sua confiança. Sua determinação ardente é admirada até por Pokémon veteranos.', en: 'Embear lives in constant emotional combustion. When it gets excited—whether in battles or play—its body radiates heat so intense that it leaves incandescent footprints wherever it goes. Full of energy, it faces any challenge head-on, even if it means clashing with much more powerful Pokémon. Despite being stubborn, it forms a fierce bond with trainers who manage to earn its trust. Its ardent determination is admired even by veteran Pokémon.', es: 'Embear vive en constante combustión emocional. Cuando se emociona, ya sea en batallas o juegos, su cuerpo irradia un calor tan intenso que deja huellas incandescentes por donde pasa. Lleno de energía, se enfrenta a cualquier desafío de frente, incluso si eso significa chocar con Pokémon mucho más poderosos. A pesar de ser terco, crea un vínculo feroz con los entrenadores que logran ganarse su confianza. Su ardiente determinación es admirada incluso por Pokémon veteranos.' }, height: "1.2 m (3'11'')", weight: "34.8 kg (76.7 lbs)", ability: {pt: "Furnace Heart", en: "Furnace Heart", es: "Corazón de Horno"}, abilityDescription: { pt: "Sempre que Embear sofre dano direto de ataques físicos, há chance de aumentar seu Ataque em 1 estágio como se o impacto acendesse sua fúria interior.", en: "Whenever Embear takes direct damage from physical attacks, there's a chance its Attack will increase by 1 stage, as if the impact ignited its inner fury.", es: "Cada vez que Embear recibe daño directo de ataques físicos, existe la posibilidad de que su Ataque aumente en 1 nivel, como si el impacto encendiera su furia interior." }, baseStats: { hp: 75, attack: 90, defense: 70, specialAttack: 80, specialDefense: 65, speed: 85 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Embear%20card.jpg', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Ember%20Gif.gif' },
+            { id: '006', name: {pt: 'Embernaut', en: 'Embernaut', es: 'Embernaut'}, types: ['Fogo', 'Lutador'], tcgCardUrl: null, description: { pt: 'Lendário entre os treinadores das montanhas, Embernaut é visto como um verdadeiro mestre flamejante. Vive isolado em cavernas cercadas por rochas escaldantes, onde ensina pequenos Charcubs através de rituais de combate e disciplina rígida. Seus treinamentos são tão intensos que o chão costuma rachar sob seus passos flamejantes. Com presença imponente e um senso de honra inabalável, molda guerreiros com garra, coragem e respeito. A lenda diz que quem assiste a um treino de Embernaut nunca esquece a dança do fogo.', en: 'Legendary among mountain trainers, Embernaut is seen as a true flaming master. It lives isolated in caves surrounded by scorching rocks, where it teaches young Charcubs through combat rituals and strict discipline. Its training sessions are so intense that the ground often cracks under its flaming steps. With an imposing presence and an unwavering sense of honor, it shapes warriors with grit, courage, and respect. Legend says that whoever witnesses an Embernaut training session never forgets the dance of fire.', es: 'Legendario entre los entrenadores de las montanhas, Embernaut es visto como un verdadero maestro llameante. Vive aislado en cuevas rodeadas de rocas abrasadoras, donde enseña a los jóvenes Charcubs a través de rituales de combate y disciplina estricta. Sus entrenamientos são tão intensos que o chão costuma rachar sob seus passos flamejantes. Com presença imponente e um inquebrantable sentido del honor, moldea guerreros con agallas, coraje y respeto. La lenda diz que quem assiste a um treino de Embernaut nunca esquece a dança do fogo.' }, height: "2.1 m (6'11'')", weight: "152.5 kg (336.2 lbs)", ability: {pt: "Blazing Will", en: "Blazing Will", es: "Voluntad Ardiente"}, abilityDescription: { pt: "Quando Embernaut está abaixo de 50% de HP, todos os ataques do tipo Fogo aumentam 30% em poder - um reflexo de sua força despertando nos momentos mais críticos.", en: "When Embernaut is below 50% HP, all Fire-type attacks increase in power by 30% - a reflection of its strength awakening in the most critical moments.", es: "Cuando Embernaut está por debajo del 50% de PS, todos los ataques de tipo Fogo aumentam su poder en un 30%, un reflejo de su fuerza despertando en los momentos más críticos." }, baseStats: { hp: 100, attack: 125, defense: 90, specialAttack: 70, specialDefense: 85, speed: 80 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Card%20Embernaut.jpg', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Embernaut%20Gif.gif'},
+            { id: '007', name: {pt: 'Kelpony', en: 'Kelpony', es: 'Kelpony'}, types: ['Água'], tcgCardUrl: null, description: { pt: 'Com aparência graciosa e temperamento reservado, Kelpony habita lagos serenos e planieis cobertas de névoa em Glimora. Sua presença é tão sutil quanto a névoa da manhã - muitos treinadores dizem apenas vislumbrar sua silhueta deslizando sobre a água antes que desapareça como um reflexo no espelho. Alimenta-se de plantas aquáticas e raramente se afasta de seu habitat, a menos que forme um vínculo forte com alguém digno. Confiar em um humano é raro - mas quando acontece, Kelpony revela uma lealdade tocante e uma força surpreendente.', en: 'With a graceful appearance and reserved temperament, Kelpony inhabits serene lakes and mist-covered plains in Glimora. Its presence is as subtle as the morning mist—many trainers claim to only glimpse its silhouette gliding over the water before it vanishes like a reflection in a mirror. It feeds on aquatic plants and rarely strays from its habitat unless it forms a strong bond with someone worthy. Trusting a human is rare—but when it happens, Kelpony reveals a touching loyalty and surprising strength.', es: 'Con una apariencia elegante y un temperamento reservado, Kelpony habita lagos serenos y llanuras cubiertas de niebla en Glimora. Su presencia es tan sutil como la niebla de la mañana: muchos entrenadores afirman solo vislumbrar su silueta deslizándose sobre el agua antes de que desaparezca como un reflejo en un espejo. Se alimenta de plantas acuáticas y rara vez se aleja de su hábitat a menos que forme um forte vínculo con alguien digno. Confiar em um humano es raro, pero cuando sucede, Kelpony revela una lealtad conmovedora y una fuerza sorprendente.' }, height: "0.9 m (2'11'')", weight: "7.4 kg (16.3 lbs)", ability: {pt: "Mist Veil", en: "Mist Veil", es: "Velo Neblina"}, abilityDescription: { pt: "Ao entrar em campo, Kelpony reduz a precisão dos ataques inimigos por um turno ao envolver o campo em névoa densa.", en: "Upon entering the field, Kelpony reduces the accuracy of enemy attacks for one turn by enveloping the field in dense mist.", es: "Al entrar en el campo, Kelpony reduce la precisión de los ataques enemigos durante un turno al envolver el campo en una densa niebla." }, baseStats: { hp: 50, attack: 60, defense: 50, specialAttack: 70, specialDefense: 55, speed: 65 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Kelpony%20card.jpg', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Kelpony%20Gif.gif' },
+            { id: '008', name: {pt: 'Keldon', en: 'Keldon', es: 'Keldon'}, types: ['Água'], tcgCardUrl: null, description: { pt: 'Keldon se move com graça hipnotizante, sua crina líquida balançando como marés ao vento. Habita as margens enevoadas de lagos profundos em Glimora, onde sua presença é sentida mais do que vista. Desconfiado por natureza, torna-se ferozmente protetor quando confia em alguém e quando isso acontece, sua força se ergue como uma onda imparável. Ágil e evasivo, Keldon é um oponente difícil de atingir. Sua velocidade e poder o tornam um aliado valioso, mas conquistar sua lealdade exige paciência e respeito.', en: 'Keldon moves with mesmerizing grace, its liquid mane swaying like tides in the wind. It inhabits the misty shores of deep lakes in Glimora, where its presence is felt more than seen. Wary by nature, it becomes fiercely protective when it trusts someone, and when that happens, its strength rises like an unstoppable wave. Agile and evasive, Keldon is a difficult opponent to hit. Its speed and power make it a valuable ally, but earning its loyalty requires patience and respect.', es: 'Keldon se mueve con una gracia hipnótica, su crin líquida ondeando como las mareas al viento. Habita las orillas neblinosas de lagos profundos en Glimora, donde su presencia se siente más que se ve. Desconfiado por naturaleza, se vuelve ferozmente protector cuando confía en alguien, y cuando eso sucede, su fuerza se eleva como una ola imparable. Ágil y evasivo, Keldon es un oponente difícil de golpear. Su velocidad y poder lo convierten en un aliado valioso, pero ganarse su lealtad requiere paciencia y respeto.' }, height: "1.4m (4'7'')", weight: "38.2 kg (84.2 lbs)", ability: {pt: "Mist Veil", en: "Mist Veil", es: "Velo Neblina"}, abilityDescription: { pt: "Ao entrar em campo, Keldon envolve tudo em uma névoa densa, reduzindo a precisão dos inimigos por um turno.", en: "Upon entering the field, Keldon envelops everything in a dense mist, reducing the accuracy of enemies for one turn.", es: "Al entrar en el campo, Keldon envuelve todo en una densa niebla, reduciendo la precisión de los enemigos durante un turno." }, baseStats: { hp: 70, attack: 85, defense: 65, specialAttack: 90, specialDefense: 75, speed: 100 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Keldon%20Card.jpg', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Keldon%20Gif.gif' },
+            { id: '009', name: {pt: 'Galaqua', en: 'Galaqua', es: 'Galaqua'}, types: ['Água', 'Fada'], tcgCardUrl: null, description: { pt: 'Elegante e enigmático, Galaqua desliza sobre vastas superfícies aquáticas como se caminhasse sobre espelhos. Sua presença invoca uma névoa cintilante que envolve tudo ao redor, acalmando marés turbulentas e trazendo paz a corações aflitos. Treinadores que ganham sua confiança não são apenas companheiros - são reconhecidos por Galaqua como almas nobres, dignas de sua majestade aquática.', en: 'Elegant and enigmatic, Galaqua glides over vast aquatic surfaces as if walking on mirrors. Its presence invokes a sparkling mist that envelops everything around, calming turbulent tides and bringing peace to troubled hearts. Trainers who earn its trust are not just companions - they are recognized by Galaqua as noble souls, worthy of its aquatic majesty.', es: 'Elegante y enigmático, Galaqua se desliza sobre vastas superficies acuáticas como si caminara sobre espejos. Su presencia invoca una niebla brillante que envuelve todo a su alrededor, calmando mareas turbulentas y trayendo paz a los corações afligidos. Los entrenadores que se ganan su confianza no son solo compañeros, son reconocidos por Galaqua como almas nobles, dignas de su majestad acuática.' }, height: "2.1 m (6'11'')", weight: "118.5 kg (261.2 lbs)", ability: {pt: "Royal Mist", en: "Royal Mist", es: "Niebla Real"}, abilityDescription: { pt: "No início da batalha, Galaqua envolve o campo em névoa sagrada por três turnos, reduzindo o dano de ataques super efetivos em 25% para aliados do tipo Água.", en: "At the start of the battle, Galaqua envelops the field in sacred mist for three turns, reducing damage from super-effective attacks by 25% for Water-type allies.", es: "Al comienzo de la batalla, Galaqua envuelve el campo en una niebla sagrada durante tres turnos, reduciendo el daño de los ataques súper efectivos en un 25% para los aliados de tipo Agua." }, baseStats: { hp: 100, attack: 85, defense: 90, specialAttack: 120, specialDefense: 110, speed: 105 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Galaqua%20Card.jpg', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Galaqua%20Gif.gif' },
+            { id: '010', name: {pt: 'Stellipuff', en:'Stellipuff', es: 'Stellipuff'}, types: ['Normal'], tcgCardUrl: null, description: { pt: 'Com seu bigode exagerado e presinhas travessas, Stellipuff é curioso por natureza e está sempre à caça de algo para morder. Embora possa parecer ameaçador ao agitar sua cauda em forma de estrela, é, na verdade, um dos Pokémon mais brincalhões encontrados nas rotas iniciais da região de Glimora. Costuma interagir com viajantes e outros Pokémon com um ar de encanto infantil, tornando-se um dos parceiros mais queridos entre treinadores novatos.', en: 'With its exaggerated mustache and mischievous fangs, Stellipuff is curious by nature and always hunting for something to bite. Although it may seem threatening when it wags its star-shaped tail, it is, in fact, one of the most playful Pokémon found on the initial routes of the Glimora region. It often interacts with travelers and other Pokémon with an air of childlike charm, making it one of the most beloved partners among novice trainers.', es: 'Con su bigote exagerado y colmillos traviesos, Stellipuff es curioso por naturaleza y siempre está buscando algo que morder. Aunque pueda parecer amenazante al agitar su cola en forma de estrella, es, de hecho, uno de los Pokémon más juguetones que se encuentran en las rutas iniciales de la región de Glimora. Suele interactuar con viajeros y outros Pokémon con un aire de encanto infantil, convirtiéndose en uno de los compañeros más queridos entre los entrenadores novatos.' }, height: "0.4 m (1'4'')", weight: "4.2 kg (9.3 lbs)", ability: {pt: "Star Glint", en:"Star Glint", es:"Destello Estelar"}, abilityDescription: { pt: "Ao entrar em campo, aumenta ligeiramente a chance de efeitos secundários em ataques do tipo Normal por 3 turnos.", en: "Upon entering the field, slightly increases the chance of secondary effects in Normal-type attacks for 3 turns.", es: "Al entrar en el campo, aumenta ligeramente la probabilidad de efeitos secundários em ataques de tipo Normal durante 3 turnos." }, baseStats: { hp: 55, attack: 60, defense: 45, specialAttack: 55, specialDefense: 50, speed: 50 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Card%20Stellipuff.jpg', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Stellipuff%20Gif.gif' },
+            { id: '011', name: {pt: 'Twinpuff', en: 'Twinpuff', es: 'Twinpuff'}, types: ['Normal'], tcgCardUrl: null, description: { pt: 'Twinpuff, o Pokémon Estrela Rebelde. Evoluído de Stellipuff, este Fakemon desenvolveu uma atitude corajosa e desafiadora. Lidera pequenos grupos de Pokémon com audácia, sempre pronto para testar suas forças contra outros ou treinadores. Em noites de céu limpo, a estrela em sua cauda brilha intensamente, agindo como um farol e guia para aqueles que ele considera dignos de confiança.', en: 'Twinpuff, the Rebel Star Pokémon. Evolved from Stellipuff, this Fakemon has developed a brave and challenging attitude. It leads small groups of Pokémon with audacity, always ready to test its strength against others or trainers. On clear nights, the star on its tail shines brightly, acting as a beacon and guide for those it deems trustworthy.', es: 'Twinpuff, el Pokémon Estrella Rebelde. Evolucionado de Stellipuff, este Fakemon ha desarrollado una actitud valiente y desafiante. Lidera pequenos grupos de Pokémon con audacia, siempre listo para probar sus fuerzas contra otros o entrenadores. En noches de cielo despejado, la estrela em sua cauda brilha intensamente, actuando como un faro y guía para aqueles a quienes considera dignos de confianza.' }, height: "0.8 m (2'7'')", weight: "18.5 kg (40.8 lbs)", ability: {pt: "Star Glint", en: "Star Glint", es: "Destello Estelar"}, abilityDescription: { pt: "Ao entrar em campo, aumenta ligeiramente a chance de efeitos secundários em ataques do tipo Normal por 3 turnos. (Habilidade herdada)", en: "Upon entering the field, slightly increases the chance of secondary effects in Normal-type attacks for 3 turns. (Inherited ability)", es: "Al entrar en el campo, aumenta ligeramente la probabilidad de efeitos secundários em ataques de tipo Normal durante 3 turnos. (Habilidad heredada)" }, baseStats: { hp: 70, attack: 80, defense: 60, specialAttack: 70, specialDefense: 65, speed: 75 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Twinpuff%20card.jpg', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Twinpuff%20Gif.gif' },
+            { id: '012', name: {pt: 'Starruffian', en: 'Starruffian', es: 'Starruffian'}, types: ['Normal', 'Lutador'], tcgCardUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@c97d0cc04bb41698e700ddae23f0198b9031a819/TCG%20%20STARRUFIAN.jpeg', description: { pt: 'Após evoluir, Starruffian abandona seu comportamento brincalhão e adota uma postura séria e estoica. Vive recluso entre penhascos altos ou cavernas elevadas, onde treina incessantemente em busca de aprimoramento. Sua cauda em forma de estrela emite um brilho intenso — quanto mais forte ele se torna, mais essa luz reluz. Poucos têm a chance de vê-lo de perto, mas os que conseguem relatam uma presença imponente, quase mística. Um verdadeiro símbolo de disciplina e autossuficiência na região de Glimora.', en: 'After evolving, Starruffian abandons its playful behavior and adopts a serious and stoic posture. It lives secluded among high cliffs or elevated caves, where it trains incessantly in pursuit of improvement. Its star-shaped tail emits an intense glow—the stronger it becomes, the more this light shines. Few have the chance to see it up close, but those who do report an imposing, almost mystical presence. A true symbol of discipline and self-sufficiency in the Glimora region.', es: 'Tras evolucionar, Starruffian abandona su comportamiento juguetón y adopta una postura seria y estoica. Vive recluido entre altos acantilados o cuevas elevadas, donde entrena incesantemente en busca de mejorar. Su cola em forma de estrella emite un brillo intenso: cuanto más forte se vuelve, más brilla esta luz. Pocos tienen la oportunidad de verlo de cerca, pero quienes lo logran informan de una presencia imponente, casi mística. Un verdadero símbolo de disciplina y autosuficiencia en la región de Glimora.' }, height: "1.5 m (4'11'')", weight: "41.2 kg (90.8 lbs)", ability: {pt: "Bravestar", en: "Bravestar", es: "Estrella Audaz"}, abilityDescription: { pt: "Aumenta o Ataque em 1 estágio ao sofrer um golpe crítico.", en: "Increases Attack by 1 stage when hit by a critical hit.", es: "Aumenta el Ataque en 1 nivel al recibir un golpe crítico." }, baseStats: { hp: 80, attack: 110, defense: 75, specialAttack: 65, specialDefense: 70, speed: 130 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Starrufian%20card.jpg', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Starrufian%20GIF.gif' },
+            { id: '013', name: {pt: 'Skivii', en: 'Skivii', es: 'Skivii'}, types: ['Normal', 'Voador'], tcgCardUrl: null, description: { pt: 'Skivii risca o céu com movimentos bruscos e imprevisíveis. Pode ser visto sozinho ou em pequenos bandos, dependendo da estação e dos ventos da região. A cauda em forma de “V” não é apenas estética — trata-se de uma ferramenta aerodinâmica altamente especializada, que transforma essa pequena ave em uma verdadeira mestra do voo ágil e preciso. Seus pios cortantes ecoam por penhascos e litorais, muitas vezes usados para demarcar território ou desafiar rivais em pleno air.', en: 'Skivii streaks across the sky with abrupt and unpredictable movements. It can be seen alone or in small flocks, depending on the season and the winds of the region. Its V-shaped tail is not just aesthetic—it is a highly specialized aerodynamic tool that turns this small bird into a true master of agile and precise flight. Its sharp cries echo through cliffs and coastlines, often used to mark territory or challenge rivals in mid-air.', es: 'Skivii surca el cielo con movimientos bruscos e impredecibles. Se le puede ver solo o en pequenas bandadas, dependiendo de la estación y los vientos de la región. Su cola em forma de "V" no es solo estética, es una herramienta aerodinámica altamente especializada que convierte a esta pequena ave en una verdadera maestra del vuelo ágil y preciso. Sus agudos graznidos resuenan por acantilados y costas, a menudo utilizados para marcar territorio o desafiar a rivales en pleno vuelo.' }, height: "0.6 m (1'11'')", weight: "3.2 kg (7.1 lbs)", ability: {pt: "Aero Slip", en: "Aero Slip", es: "Desliz Aéreo"}, abilityDescription: { pt: "Tem 20% de chance de evadir automaticamente ataques não prioritários ao entrar em campo.", en: "Has a 20% chance to automatically evade non-priority attacks upon entering the field.", es: "Tiene un 20% de probabilidad de evadir automáticamente ataques no prioritarios al entrar en el campo." }, baseStats: { hp: 45, attack: 40, defense: 45, specialAttack: 55, specialDefense: 40, speed: 65 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Skivii%20card.jpg', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Skivii%20Gif.gif'},
+            { id: '014', name: {pt: 'Skyriss', en: 'Skyriss', es: 'Skyriss'}, types: ['Normal', 'Voador'], tcgCardUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@c97d0cc04bb41698e700ddae23f0198b9031a819/TCC%20SKYRISS.jpeg', description: { pt: 'Skyriss voa com uma velocidade impressionante, cortando o céu com precisão cirúrgica. Valente e leal, mantém um olhar atento sobre o território e sobre aqueles em quem confia. Dizem que, no passado, era usado pelos antigos habitantes de Glimora como mensageiro aéreo — suas rotas eram tão certeiras que nem mesmo os ventos traiçoeiros conseguiam desviá-lo. Extremamente inteligente, Skyriss é capaz de interpretar comandos complexos e reagir em campo com astúcia. Sua cauda evoluiu para se tornar uma lâmina aerodinâmica mortal — útil tanto para defesa quanto para exibições acrobáticas.', en: 'Skyriss flies with impressive speed, cutting through the sky with surgical precision. Brave and loyal, it keeps a watchful eye on its territory and those it trusts. It is said that in the past, it was used by the ancient inhabitants of Glimora as an aerial messenger—its routes were so accurate that not even treacherous winds could divert it. Extremely intelligent, Skyriss is capable of interpreting complex commands and reacting on the field with cunning. Its tail has evolved into a deadly aerodynamic blade—useful for both defense and acrobatic displays.', es: 'Skyriss vuela a una velocidad impresionante, cortando el cielo con precisión quirúrgica. Valiente y leal, mantiene una mirada atenta sobre su territorio y aquellos en quienes confía. Se dice que en el pasado, los antiguos habitantes de Glimora lo usaban como mensajero aéreo: sus rutas eran tan precisas que ni siquiera los vientos traicioneros podían desviarlo. Extremadamente inteligente, Skyriss es capaz de interpretar órdenes complejas y reaccionar en el campo con astucia. Su cola ha evolucionado hasta convertirse en una cuchilla aerodinámica mortal, útil tanto para la defensa como para exhibiciones acrobáticas.' }, height: "1.1 m (3'7'')", weight: "9.6 kg (21.2 lbs)", ability: {pt: "Sky Relay", en: "Sky Relay", es: "Relevo Celeste"}, abilityDescription: { pt: "Ataques do tipo Voador usados por Skyriss têm prioridade aumentada no primeiro turno após entrar em campo.", en: "Flying-type attacks used by Skyriss have increased priority on the first turn after entering the field.", es: "Los ataques de tipo Volador utilizados por Skyriss tienen prioridad aumentada en el primer turno después de entrar en el campo." }, baseStats: { hp: 60, attack: 70, defense: 55, specialAttack: 75, specialDefense: 60, speed: 90 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Skyriss%20card.jpg', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Skyriss%20GIF.gif'},
+            { id: '015', name: {pt: 'Skyrion', en: 'Skyrion', es: 'Skyrion'}, types: ['Normal', 'Voador'], tcgCardUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@c97d0cc04bb41698e700ddae23f0198b9031a819/TCG%20SKYRION.jpeg', description: { pt: 'Skyrion é conhecido por sua postura altiva e pelo olhar atento que raramente perde um movimento no céu. Sua plumagem elegante e o colar rígido em seu pescoço são sinais de liderança e respeito entre as aves selvagens. Quando aparece, os outros Pokémon alados silenciam — como se estivessem sendo inspecionados. A argola em seu pescoço não é natural: acredita-se que seja uma estrutura formada ao longo de sua evolução, simbolizando sua transição de mensageiro a comandante dos ventos.', en: 'Skyrion is known for its haughty posture and watchful gaze that rarely misses a movement in the sky. Its elegant plumage and the rigid collar on its neck are signs of leadership and respect among wild birds. When it appears, other winged Pokémon fall silent—as if being inspected. The ring on its neck is not natural: it is believed to be a structure formed throughout its evolution, symbolizing its transition from messenger to commander of the winds.', es: 'Skyrion es conocido por su postura altiva y su mirada atenta que raramente pierde un movimiento en el cielo. Su elegante plumaje y el rígido collar en su cuello son señales de liderazgo y respeto entre las aves selvagens. Cuando aparece, los otros Pokémon alados guardan silencio, como si estuvieran siendo inspeccionados. El aro en su cuello no es natural: se cree que es una estrutura formada a lo largo de su evolución, simbolizando su transición de mensajero a comandante de los vientos.' }, height: "1,6 m", weight: "21,5 kg", ability: {pt: "Eagle’s Gaze", en: "Eagle’s Gaze", es: "Mirada de Águila"}, abilityDescription: { pt: "Aumenta a chance de acerto de movimentos de precisão média e revela a habilidade do oponente ao entrar em campo.", en: "Increases the accuracy of medium-precision moves and reveals the opponent's ability upon entering the field.", es: "Aumenta la precisión de los movimientos de precisión media y revela la habilidad del oponente al entrar en el campo." }, baseStats: { hp: 85, attack: 95, defense: 80, specialAttack: 70, specialDefense: 85, speed: 115 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Skyrion%20card.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Skyrion%20Gif.gif'},
+            { id: '016', name: {pt: 'Grumtox', en: 'Grumtox', es: 'Grumtox'}, types: ['Venenoso'], tcgCardUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@c97d0cc04bb41698e700ddae23f0198b9031a819/TCG%20GRUNTOX.jpeg', description: { pt: 'Grumtox, o Pokémon Gangue Tóxica, é pequeno, valente e cheio de personalidade. Vive tanto nas bordas de florestas quanto nas ruas movimentadas das cidades. Costuma andar em bandos barulhentos e territoriais, invadindo feiras e barracas como pequenos fora da lei. Ao se sentir ameaçado, libera um gás tóxico pelas narinas — seu cheiro é tão forte que já foi comparado a lixo queimado misturado com frutas podres.', en: 'Grumtox, the Toxic Gang Pokémon, is small, brave, and full of personality. It lives on the edges of forests as well as on the bustling city streets. It usually moves in noisy and territorial gangs, raiding fairs and stalls like little outlaws. When threatened, it releases a toxic gas from its nostrils—its smell is so strong it has been compared to burnt trash mixed with rotten fruit.', es: 'Grumtox, el Pokémon Pandilla Tóxica, es pequeno, valiente y lleno de personalidad. Vive tanto en los bordes de los bosques como en las bulliciosas calles de las ciudades. Suele moverse en bandas ruidosas y territoriales, invadiendo ferias y puestos como pequenos forajidos. Cuando se siente amenazado, libera un gas tóxico por sus fosas nasales; su olor es tan fuerte que ha sido comparado con basura quemada mezclada con fruta podrida.' }, height: "0,5 m", weight: "10,3 kg", ability: {pt: "Cheiro Insuportável", en: "Unbearable Smell", es: "Olor Inaguantable"}, abilityDescription: { pt: "Sempre que entra em campo, Grumtox libera um gás com odor nauseante. Esse cheiro pode desestabilizar o oponente, dando chance de fazê-lo recuar ao receber um ataque físico.", en: "Whenever it enters the field, Grumtox releases a gas with a nauseating odor. This smell can destabilize the opponent, giving a chance to make it flinch when hit by a physical attack.", es: "Cada vez que entra en el campo, Grumtox libera un gas con un olor nauseabundo. Este olor pode desestabilizar al oponente, dando la oportunidad de hacerlo retroceder al recibir un ataque físico." }, baseStats: { hp: 55, attack: 65, defense: 60, specialAttack: 30, specialDefense: 50, speed: 40 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Grumtoxcard.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Grumtox%20GIF.gif'},
+            { id: '017', name: {pt: 'Swintox', en: 'Swintox', es: 'Swintox'}, types: ['Venenoso'], tcgCardUrl: null, description: { pt: 'Swintox é a evolução de Grumtox. Após crescer nas ruas e sobreviver em bandos, torna-se o líder absoluto de sua gangue. Com comportamento rebelde e natureza protetora, costuma habitar ferros-velhos, terrenos baldios e áreas abandonadas nos arredores das cidades. Possui presas afiadas, um corpo robusto e exala um gás tóxico pelas narinas quando se sente ameaçado. A caveira em seu corpo é usada como símbolo por outros Pokémon de rua — uma verdadeira lenda viva no submundo urbano. Se um aliado estiver em apuros, Swintox parte pra cima sem pensar duas vezes.', en: 'Swintox is the evolution of Grumtox. After growing up on the streets and surviving in packs, it becomes the absolute leader of its gang. With a rebellious behavior and protective nature, it usually inhabits junkyards, vacant lots, and abandoned areas on the outskirts of cities. It has sharp fangs, a sturdy body, and exhales a toxic gas from its nostrils when threatened. The skull on its body is used as a symbol by other street Pokémon—a true living legend in the urban underworld. If an ally is in trouble, Swintox rushes in without a second thought.', es: 'Swintox es la evolución de Grumtox. Después de crecer en las calles y sobrevivir en manadas, se convierte en el líder absoluto de su pandilla. Con un comportamiento rebelde y una naturaleza protectora, suele habitar en depósitos de chatarra, terrenos baldíos y áreas abandonadas en las afueras de las ciudades. Posee colmillos afilados, un cuerpo robusto y exhala un gas tóxico por sus fosas nasales cuando se siente amenazado. La calavera en su cuerpo es utilizada como símbolo por otros Pokémon callejeros, una verdadera leyenda viviente en el submundo urbano. Si un aliado está en apuros, Swintox se lanza sin pensarlo dos veces.' }, height: "1,1 m", weight: "48,3 kg", ability: {pt: "Cheiro de Caos", en: "Scent of Chaos", es: "Olor del Caos"}, abilityDescription: { pt: "Quando entra em campo, Swintox reduz o Ataque dos oponentes. Seu odor forte e irritante desestabiliza o ambiente ao redor, confundindo adversários e impondo respeito imediato.", en: "When it enters the field, Swintox lowers the Attack of opponents. Its strong, irritating odor destabilizes the surrounding environment, confusing adversaries and commanding immediate respect.", es: "Cuando entra en el campo, Swintox reduce el Ataque de los oponentes. Su olor forte e irritante desestabiliza el entorno, confundiendo a los adversarios e imponiendo respeto inmediato." }, baseStats: { hp: 90, attack: 100, defense: 90, specialAttack: 40, specialDefense: 80, speed: 80 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Swintox%20Card.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Swintox%20Card.png'},
+            { id: '018', name: {pt: 'Zigwigg', en: 'Zigwigg', es: 'Zigwigg'}, types: ['Inseto'], tcgCardUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@c97d0cc04bb41698e700ddae23f0198b9031a819/TCG%20ZIGWIGG.jpeg', description: { pt: 'Zigwigg é um Pokémon calmo e comilão, encontrado frequentemente cochilando sob árvores depois de devorar frutas maduras e folhas tenras. Suas antenas longas e sensíveis detectam vibrações e mudanças no ambiente, alertando-o sobre predadores mesmo antes de serem vistos. Apesar da aparência fofa e tranquila, Zigwigg é surpreendentemente corajoso: quando acuado, ergue o pequeno chifre em sua cabeça e investe sem hesitar.', en: 'Zigwigg is a calm and gluttonous Pokémon, often found napping under trees after devouring ripe fruits and tender leaves. Its long, sensitive antennae detect vibrations and changes in the environment, alerting it to predators even before they are seen. Despite its cute and peaceful appearance, Zigwigg is surprisingly brave: when cornered, it raises the small horn on its head and charges without hesitation.', es: 'Zigwigg es un Pokémon tranquilo y glotón, que se encuentra a menudo durmiendo la siesta bajo los árboles después de devorar frutas maduras y hojas tiernas. Sus largas y sensibles antenas detectan vibraciones e cambios en el entorno, alertándolo de los depredadores incluso antes de que sean vistos. A pesar de su apariencia linda y pacífica, Zigwigg es sorprendentemente valiente: cuando se ve acorralado, levanta el pequeno cuerno de su cabeza y carga sin dudarlo.' }, height: "0,4 m", weight: "3,1 kg", ability: {pt: "Antena Viva", en: "Living Antenna", es: "Antena Viva"}, abilityDescription: { pt: "Detecta movimentos ao redor com precisão aumentada — aumenta a chance de esquiva contra ataques de prioridade.", en: "Detects surrounding movements with increased accuracy—increases the chance of dodging priority moves.", es: "Detecta los movimientos circundantes con mayor precisión: aumenta la probabilidad de esquivar ataques de prioridad." }, baseStats: { hp: 55, attack: 45, defense: 40, specialAttack: 35, specialDefense: 45, speed: 50 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Zigwiggcard.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Zigwigg%20gif.gif'},
+            { id: '019', name: {pt: 'Pupwig', en: 'Pupwig', es: 'Pupwig'}, types: ['Inseto'], tcgCardUrl: null, description: { pt: 'Pupwig entra em um estado de repouso profundo, envolto por um casulo macio, porém surpreendentemente resistente. Enquanto permanece imóvel por longos períodos, suas antenas continuam sensíveis, sempre atentas aos menores sinais de movimento ou perigo ao redor. Quando percebe uma ameaça, Pupwig libera uma névoa leve e adocicada que causa confusão temporária, permitindo que ele se esconda novamente entre a vegetação. Esta fase é crucial para seu crescimento — é dentro do casulo que ele acumula toda a energia necessária para sua transformação final.', en: 'Pupwig enters a state of deep rest, enveloped in a soft yet surprisingly sturdy cocoon. While it remains motionless for long periods, its antennae remain sensitive, always alert to the slightest signs of movement or danger around. When it senses a threat, it releases a light, sweet mist that causes temporary confusion, allowing it to hide again among the vegetation. This phase is crucial for its growth—it is inside the cocoon that it accumulates all the energy needed for its final transformation.', es: 'Pupwig entra en un estado de profundo reposo, envuelto en un capullo suave pero sorprendentemente resistente. Mientras permanece inmóvil durante largos períodos, sus antenas permanecen sensibles, siempre atentas a las más mínimas señales de movimiento o peligro a su alrededor. Cuando percibe una amenaza, Pupwig libera una niebla ligera y dulzona que causa confusão temporal, permitiéndole esconderse de nuevo entre la vegetação. Esta fase es crucial para su crecimiento: es dentro del capullo donde acumula toda la energía necesaria para su transformación final.' }, height: "0.6 m", weight: "6.0 kg", ability: {pt: "Sweet Spores", en: "Sweet Spores", es: "Esporas Dulces"}, abilityDescription: { pt: "Ao ser atingido por um ataque direto, Pupwig tem 30% de chance de liberar uma névoa entorpecente que reduz a velocidade do oponente por dois turnos.", en: "When hit by a direct attack, Pupwig has a 30% chance to release a numbing mist that reduces the opponent's speed for two turns.", es: "Al ser golpeado por un ataque directo, Pupwig tiene un 30% de probabilidad de liberar una niebla adormecedora que reduce la velocidad del oponente durante dos turnos." }, baseStats: { hp: 60, attack: 40, defense: 75, specialAttack: 40, specialDefense: 75, speed: 40 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Pupwigg%20Card.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/PupwiggGif.gif'},
+            { id: '020', name: {pt: 'Mirabelle', en: 'Mirabelle', es: 'Mirabelle'}, types: ['Inseto', 'Psíquico'], tcgCardUrl: null, description: { pt: 'Elegante, misteriosa e repleta de empatia, Mirabelle é uma borboleta psíquica que paira com leveza por entre jardins silenciosos e florestas encantadas. Dizem que sua presença traz paz e sorte para aqueles que a têm como parceira. Ela é extremamente sensível às emoções humanas e de outros Pokémon, usando suas asas para emitir sinais psíquicos quase imperceptíveis que acalmam os arredores. Treinadores experientes que criam laços profundos com uma Mirabelle relatam conseguir se comunicar com ela por telepatia. Seus movimentos durante o voo parecem coreografias, e suas asas emitem um brilho suave que muda de tonalidade conforme seu humor. Apesar da aparência delicada, Mirabelle é uma combatente veloz e precisa. Seu poder mental combinado à sua graciosidade a tornam uma aliada formidável em batalhas estratégicas.', en: 'Elegant, mysterious, and full of empathy, Mirabelle is a psychic butterfly that hovers lightly through silent gardens and enchanted forests. Its presence is said to bring peace and luck to those who have it as a partner. It is extremely sensitive to the emotions of humans and other Pokémon, using its wings to emit nearly imperceptible psychic signals that calm its surroundings. Experienced trainers who form deep bonds with a Mirabelle report being able to communicate with it telepathically. Its movements during flight resemble choreography, and its wings emit a soft glow that changes hue with its mood. Despite its delicate appearance, Mirabelle is a swift and precise combatant. Its mental power combined with its gracefulness make it a formidable ally in strategic battles.', es: 'Elegante, misteriosa y llena de empatía, Mirabelle es una mariposa psíquica que se cierne con ligereza entre jardines silenciosos y bosques encantados. Se dice que su presencia trae paz y suerte a quienes la tienen como compañera. Es extremadamente sensible a las emociones de los humanos y otros Pokémon, usando sus alas para emitir señales psíquicas casi imperceptibles que calman su entorno. Los entrenadores experimentados que crean lazos profundos com una Mirabelle informan que pueden comunicarse con ella telepáticamente. Sus movimientos durante el vuelo parecen coreografías, y sus asas emiten un suave brillo que cambia de tonalidad según su estado de ánimo. A pesar de su delicada apariencia, Mirabelle es una combatiente rápida y precisa. Su poder mental combinado con su gracia la convierten en una aliada formidable en batallas estratégicas.' }, height: "1.2 m", weight: "18.4 kg", ability: {pt: "Psyglow", en: "Psyglow", es: "Psicobrillo"}, abilityDescription: { pt: "Ao entrar em campo, Mirabelle reduz o Ataque de todos os oponentes com seu brilho psíquico calmante. (Efeito adicional em batalha dupla: diminui o Ataque em 1 estágio dos Pokémon inimigos.)", en: "Upon entering the field, Mirabelle lowers the Attack of all opponents with its calming psychic glow. (Additional effect in Double Battles: lowers the Attack of opposing Pokémon by one stage.)", es: "Al entrar en el campo, Mirabelle reduce el Ataque de todos los oponentes con su calmante brillo psíquico. (Efecto adicional en batallas dobles: disminuye el Ataque de los Pokémon oponentes en un nivel.)" }, baseStats: { hp: 75, attack: 60, defense: 70, specialAttack: 105, specialDefense: 90, speed: 120 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Mirabelle%20Card.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Mirabelle%20Card.png'},
+            { id: '021', name: { pt: 'Crocrodden', en: 'Crocrodden', es: 'Crocrodden' }, types: ['Água', 'Sombrio'], tcgCardUrl: null, description: { pt: 'Crocrodden vive em pântanos e áreas costeiras desertas, onde costuma se esconder entre a vegetação ou descansar ao sol. Rabugento e territorial, é conhecido por sua mordida poderosa e sua visão noturna extremamente aguçada. Com reflexos rápidos, consegue identificar e atacar oponente antes mesmo de ser percebido.', en: 'Crocrodden lives in swamps and deserted coastal areas, where it usually hides among the vegetation or rests in the sun. Grumpy and territorial, it is known for its powerful bite and extremely sharp night vision. With quick reflexes, it can identify and attack an opponent even before being noticed.', es: 'Crocrodden vive en pantanos y zonas costeras desiertas, donde suele esconderse entre la vegetação o descansar al sol. Cascarrabias y territorial, es conocido por su poderosa mordida y su visión nocturna extremadamente aguda. Con reflejos rápidos, puede identificar y atacar a un oponente incluso antes de ser percibido.' }, height: "0.6 m", weight: "11.2 kg", ability: {pt: "Nightvision", en: "Nightvision", es: "Visión Nocturna"}, abilityDescription: { pt: "Aumenta a precisão de ataques noturnos ou em campos com neblina.", en: "Increases the accuracy of attacks at night or in foggy fields.", es: "Aumenta la precisión de los ataques nocturnos o en campos con niebla." }, baseStats: { hp: 50, attack: 65, defense: 55, specialAttack: 50, specialDefense: 60, speed: 70 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Crocodden%20Card.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Crocodden%20Gif.gif' },
+            { id: '022', name: { pt: 'Grognaw', en: 'Grognaw', es: 'Grognaw' }, types: ['Água', 'Sombrio'], tcgCardUrl: null, description: { pt: 'Apesar de parecer preguiçoso quando está tomando sol à beira de rios e praias, Grognaw está sempre alerta à noite. Seus dentes são afiados como lâminas e sua mandíbula é capaz de esmagar conchas e até cascos duros. Seu mau humor constante o torna imprevisível em batalhas, sendo temido por Pokémon que invadem seu território.', en: 'Although it seems lazy when sunbathing on the banks of rivers and beaches, Grognaw is always alert at night. Its teeth are as sharp as blades, and its jaw is capable of crushing shells and even hard carapaces. Its constant bad mood makes it unpredictable in battles, being feared by Pokémon that invade its territory.', es: 'Aunque parece perezoso cuando toma el sol a la orilla de ríos y playas, Grognaw siempre está alerta por la noche. Sus dientes son tan afilados como cuchillas y su mandíbula es capaz de triturar conchas e incluso caparazones duros. Su constante mal humor lo hace impredecible en las batallas, siendo temido por los Pokémon que invaden su territorio.' }, height: "1.3 m", weight: "43.8 kg", ability: {pt: "Nightvision", en: "Nightvision", es: "Visión Nocturna"}, abilityDescription: { pt: "Aumenta a precisão de ataques noturnos ou em campos com neblina.", en: "Increases the accuracy of attacks at night or in foggy fields.", es: "Aumenta la precisión de los ataques nocturnos o en campos con niebla." }, baseStats: { hp: 75, attack: 90, defense: 70, specialAttack: 65, specialDefense: 80, speed: 105 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Grognaw%20Card.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Gif%20Grognaw.gif' },
+            { id: '023', name: { pt: 'Spynodile', en: 'Spynodile', es: 'Spynodile' }, types: ['Água', 'Sombrio'], tcgCardUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@c97d0cc04bb41698e700ddae23f0198b9031a819/TCG%20SPINODYLE.jpeg', description: { pt: 'Spynodile é o maior predador noturno de Glimora. Seus olhos brilham em vermelho sob as águas pantanosas, como faróis sinistros em meio à escuridão. Ele se move com agilidade surpreendente para o seu tamanho, emboscando presas com golpes precisos. Treinadores experientes respeitam sua força letal e inteligência estratégica.', en: 'Spynodile is the largest nocturnal predator in Glimora. Its eyes glow red under the swampy waters, like sinister beacons in the darkness. It moves with surprising agility for its size, ambushing prey with precise strikes. Experienced trainers respect its lethal strength and strategic intelligence.', es: 'Spynodile es el depredador nocturno más grande de Glimora. Sus ojos brillan en rojo bajo las aguas pantanosas, como faros siniestros en medio de la oscuridad. Se mueve con una agilidad sorprendente para su tamaño, emboscando a sus presas con golpes precisos. Los entrenadores experimentados respetan su fuerza letal y su inteligencia estratégica.' }, height: "2.2 m", weight: "115.5 kg", ability: {pt: "Nightvision", en: "Nightvision", es: "Visión Nocturna"}, abilityDescription: { pt: "Aumenta a precisão de ataques noturnos ou em campos com neblina.", en: "Increases the accuracy of attacks at night or in foggy fields.", es: "Aumenta la precisión de los ataques nocturnos o en campos con niebla." }, baseStats: { hp: 90, attack: 125, defense: 85, specialAttack: 75, specialDefense: 95, speed: 130 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Spynodile%20Card.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Spynodile%20GIF.gif' },
+            { id: '024', name: { pt: 'Finlance', en: 'Finlance', es: 'Finlance' }, types: ['Água'], tcgCardUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@c97d0cc04bb41698e700ddae23f0198b9031a819/TCG%20FINLANCE.jpeg', description: { pt: 'Cortando o mar como uma lança viva, Finlance nada em bandos velozes que lembram torpedos marinhos. Pode atingir até 120 km/h por curtos períodos, deixando apenas um rastro nas águas. Sua velocidade e precisão o tornam um predador temido nas regiões costeiras de Glimora. Costuma aparecer em manhãs nubladas ou antes de tempestades, como se pressentisse as mudanças no clima. Muitos pescadores relatam ter visto um brilho azulado cortando as ondas... segundos antes de perderem seus anzóis.', en: 'Cutting through the sea like a living spear, Finlance swims in swift schools that resemble marine torpedoes. It can reach up to 120 km/h for short periods, leaving only a trail in the waters. Its speed and precision make it a feared predator in the coastal regions of Glimora. It often appears on cloudy mornings or before storms, as if sensing the changes in the weather. Many fishermen report seeing a bluish glow cutting through the waves... seconds before losing their hooks.', es: 'Cortando el mar como una lanza viviente, Finlance nada en veloces bancos que recuerdan a torpedos marinos. Puede alcanzar hasta 120 km/h por cortos períodos, dejando solo un rastro en las aguas. Su velocidad y precisión lo convierten en un depredador temido en las regiones costeras de Glimora. Suele aparecer en mañanas nubladas o antes de tormentas, como si presintiera los cambios en el clima. Muchos pescadores relatan haber visto un brilho azulado cortando las olas... segundos antes de perder sus anzuelos.' }, height: "0.8 m", weight: "16.3 kg", ability: {pt: "Hydro Dash", en: "Hydro Dash", es: "Hidro Impulso"}, abilityDescription: { pt: "Ao entrar em campo, Finlance aumenta a própria Velocidade em um estágio se estiver chovendo ou em terrenos aquáticos.", en: "Upon entering the field, Finlance\'s Speed is boosted by one stage if it is raining or on aquatic terrain.", es: "Al entrar en el campo, Finlance aumenta su Velocidad en un nivel si está lloviendo o en terreno acuático." }, baseStats: { hp: 55, attack: 60, defense: 45, specialAttack: 50, specialDefense: 45, speed: 105 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Card%20Finlance.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Finlance%20GIF.gif' },
+            { id: '025', name: { pt: 'Steelfin', en: 'Steelfin', es: 'Steelfin' }, types: ['Água', 'Aço'], tcgCardUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@c97d0cc04bb41698e700ddae23f0198b9031a819/TCG%20STEELFIN.jpeg', description: { pt: 'Steelfin rasga as correntes marítimas como uma lança metálica viva. É o predador supremo das águas costeiras de Glimora, liderando cardumes de Finlance evoluídos em ataques velozes e precisos. Seu corpo robusto e aerodinâmico funciona como um verdadeiro submarino, equipado com sensores naturais que detectam presas a grandes distâncias. Dizem que, quando mergulha nas profundezas, sua silhueta se confunde com submarinos desaparecidos no abismo.', en: 'Steelfin tears through the ocean currents like a living metal spear. It is the ultimate predator of Glimora\'s coastal waters, leading schools of evolved Finlance in swift and precise attacks. Its sturdy, aerodynamic body functions like a true submarine, equipped with natural sensors that detect prey from great distances. It is said that when it dives into the depths, its silhouette is mistaken for submarines lost in the abyss.', es: 'Steelfin rasga las corrientes marinas como una lanza metálica viviente. Es el depredador supremo de las aguas costeras de Glimora, liderando bancos de Finlance evolucionados en ataques rápidos y precisos. Su cuerpo robusto y aerodinâmico funciona como un verdadero submarino, equipado com sensores naturales que detectan presas a grandes distancias. Se dice que, cuando se sumerge en las profundidades, su silueta se confunde con submarinos desaparecidos en el abismo.' }, height: "2.1 m", weight: "142.0 kg", ability: {pt: "Aqua Radar", en: "Aqua Radar", es: "Radar Acuático"}, abilityDescription: { pt: "Detecta oponente com precisão em clima chuvoso, aumentando a evasão em 1 estágio.", en: "Detects opponents with precision in rainy weather, increasing evasion by one stage.", es: "Detecta oponentes con precisión en clima lluvioso, aumentando la evasión en un nivel." }, baseStats: { hp: 90, attack: 85, defense: 90, specialAttack: 70, specialDefense: 90, speed: 105 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Steelfin%20Card.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Steelfin%20GIF.gif' },
+            { id: '026', name: { pt: 'Budling', en: 'Budling', es: 'Budling' }, types: ['Grama'], tcgCardUrl: null, description: { pt: 'Pequeno, radiante e cheio de vida, Budling é o parceiro ideal para quem ama jardinagem e natureza. No passado, era usado por camponeses como semeador, ajudando a espalhar sementes pelos campos. Sua cauda possui um pequeno botão que armazena energia solar, a qual usa para brincar entre as flores e alimentar outras plantas ao seu redor.', en: 'Small, radiant, and full of life, Budling is the ideal partner for those who love gardening and nature. In the past, it was used by peasants as a sower, helping to spread seeds across the fields. Its tail has a small bud that stores solar energy, which it uses to play among the flowers and feed other plants around it.', es: 'Pequeño, radiante y lleno de vida, Budling es el compañero ideal para quienes aman la jardinería y la naturaleza. En el pasado, era utilizado por los campesinos como sembrador, ayudando a esparcir semillas por los campos. Su cola posee un pequeño botón que almacena energía solar, la cual utiliza para jugar entre las flores y alimentar a otras plantas a su alrededor.' }, height: "0.5 m", weight: "4.8 kg", ability: {pt: "Clorofila", en: "Chlorophyll", es: "Clorofila"}, abilityDescription: { pt: "Aumenta a velocidade do Pokémon sob luz solar intensa.", en: "Boosts the Pokémon's Speed stat in harsh sunlight.", es: "Aumenta la Velocidad del Pokémon bajo un sol intenso." }, baseStats: { hp: 65, attack: 40, defense: 60, specialAttack: 50, specialDefense: 55, speed: 45 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Card%20Budling.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@main/Gif%20Budling.gif' },
+            { id: '027', name: { pt: 'Herbissal', en: 'Herbissal', es: 'Herbissal' }, types: ['Grama', 'Venenoso'], tcgCardUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@c97d0cc04bb41698e700ddae23f0198b9031a819/TCG%20HERBISSAL.jpeg', description: { pt: 'Tranquilo, gentil e sempre florido. Herbissal vive nas matas férteis de Glimora, onde costuma habitar regiões próximas a árvores frutíferas. A flor em sua cauda armazena sementes nutritivas que ele dispersa enquanto caminha. Por onde passa, o solo se torna mais fértil, atraindo outros Pokémon e revitalizando a flora ao redor. Sua presença é considerada um sinal de equilíbrio ecológico.', en: 'Calm, gentle, and always in bloom. Herbissal lives in the fertile forests of Glimora, where it usually inhabits regions near fruit trees. The flower on its tail stores nutritious seeds that it disperses as it walks. Wherever it goes, the soil becomes more fertile, attracting other Pokémon and revitalizing the surrounding flora. Its presence is considered a sign of ecological balance.', es: 'Tranquilo, gentil y siempre florecido. Herbissal vive en los bosques fértiles de Glimora, donde suele habitar regiones cercanas a árboles frutales. La flor em sua cauda almacena semillas nutritivas que dispersa mientras camina. Por donde pasa, el suelo se vuelve más fértil, atrayendo a otros Pokémon y revitalizando la flora circundante. Su presencia se considera una señal de equilibrio ecológico.' }, height: "1,6 m", weight: "54,0 kg", ability: {pt: "Seed Trail", en: "Seed Trail", es: "Rastro de Semillas"}, abilityDescription: { pt: "Ao fim de cada turno, Herbissal pode curar uma pequena parte do seu HP se o terreno for do tipo grama.", en: "At the end of each turn, Herbissal can heal a small portion of its HP if the terrain is grassy.", es: "Al final de cada turno, Herbissal puede curar una pequeña parte de su HP si el terreno es de tipo hierba." }, baseStats: { hp: 100, attack: 85, defense: 95, specialAttack: 95, specialDefense: 90, speed: 65 }, cardImageUrl: 'https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/2d4ed8decb4142d00401afd9ce803f159bc2b558/Card%20Herbissal.png', modalImageUrl: 'https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/2d4ed8decb4142d00401afd9ce803f159bc2b558/Gif%20Herbissal.gif' },
+            { id: '028', name: { pt: 'Sakunny', en: 'Sakunny', es: 'Sakunny' }, types: ['Grama'], tcgCardUrl: null, description: { pt: 'Sakunny é um Pokémon tímido e cauteloso, encontrado em bosques floridos ou perto de raízes profundas. Vive em grupos escondidos em tocas subterrâneas. Antes do inverno, costuma procurar locais úmidos e aquecidos para hibernar. Seu pequeno botão de flor na cauda armazena energia vital, usada para se proteger durante longos períodos de repouso.', en: 'Sakunny is a shy and cautious Pokémon, found in flowering groves or near deep roots. It lives in groups hidden in underground burrows. Before winter, it usually looks for warm, damp places to hibernate. Its small flower bud on its tail stores vital energy, used to protect itself during long periods of rest.', es: 'Sakunny es un Pokémon tímido y cauteloso, que se encuentra en arboledas floridas o cerca de raíces profundas. Vive en grupos escondidos en madrigueras subterráneas. Antes del invierno, suele buscar lugares cálidos y húmedos para hibernar. El pequeño capullo de flor en su cola almacena energía vital, que utiliza para protegerse durante largos períodos de descanso.' }, height: "0.4 m", weight: "4.8 kg", ability: {pt: "Chlorophyll", en: "Chlorophyll", es: "Clorofila"}, abilityDescription: { pt: "Aumenta a velocidade de Sakunny em clima ensolarado, permitindo reações rápidas e fuga eficiente.", en: "Boosts Sakunny's Speed in sunny weather, allowing for quick reactions and efficient escape.", es: "Aumenta la velocidad de Sakunny en climas soleados, permitiendo reacciones rápidas y una huida eficiente." }, baseStats: { hp: 55, attack: 30, defense: 45, specialAttack: 30, specialDefense: 50, speed: 40 }, cardImageUrl: 'https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/256e86e319fa31f7a51afa9e5811cd7d16a4f3ee/Card%20Sakunny.png', modalImageUrl: 'https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/256e86e319fa31f7a51afa9e5811cd7d16a4f3ee/Gif%20Sakunny.gif' },
+            { id: '029', name: { pt: 'Hannabun', en: 'Hannabun', es: 'Hannabun' }, types: ['Grama'], tcgCardUrl: null, description: { pt: 'Hannabun é conhecido por seus saltos extraordinários, chegando a dois metros de altura com facilidade. Suas patas traseiras, fortes e elásticas, são capazes de derrubar até mesmo um Tauros com um chute bem colocado. Costuma viver em campos floridos, onde treina seus saltos e floresce em meio à primavera. Suas orelhas em forma de pétala vibram suavemente com o vento, servindo como um símbolo da estação.', en: 'Hannabun is known for its extraordinary jumps, reaching heights of two meters with ease. Its strong and elastic hind legs are capable of knocking down even a Tauros with a well-placed kick. It usually lives in flowery fields, where it trains its jumps and flourishes in the midst of spring. Its petal-shaped ears vibrate gently in the wind, serving as a symbol of the season.', es: 'Hannabun es conocido por sus saltos extraordinarios, alcanzando alturas de dos metros con facilidad. Sus fuertes y elásticas patas traseras son capaces de derribar incluso a un Tauros con una patada bien colocada. Suele vivir en campos floridos, donde entrena sus saltos y florece en medio de la primavera. Sus orejas en forma de pétalo vibran suavemente con el viento, sirviendo como símbolo de la estación.' }, height: "0.8 m", weight: "10.4 kg", ability: {pt: "Spring Kick", en: "Spring Kick", es: "Patada Primaveral"}, abilityDescription: { pt: "Aumenta o poder de ataques do tipo Grama quando Hannabun está com metade ou mais do HP.", en: "Increases the power of Grass-type attacks when Hannabun has half or more of its HP.", es: "Aumenta el poder de los ataques de tipo Planta cuando Hannabun tiene la mitad o más de sus PS." }, baseStats: { hp: 60, attack: 75, defense: 60, specialAttack: 45, specialDefense: 55, speed: 90 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@89d3df1f371ec182948cb01ee92cc4546cb3d30e/Capa%20Hannabun.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@89d3df1f371ec182948cb01ee92cc4546cb3d30e/Hannabun%20GIf.gif' },
+            { id: '030', name: { pt: 'Florabun', en: 'Florabun', es: 'Florabun' }, types: ['Grama', 'Fada'], tcgCardUrl: null, description: { pt: 'Elegante e serena, Florabun floresce de Hannabun quando este possui um forte vínculo afetivo e conhece um movimento do tipo Fada, usando uma Shiny Stone. Seus passos são leves e graciosos, e dizem que sua presença traz calma e renova as flores ao redor. Costuma viver em clareiras protegidas, cercada por outros Pokémon que confiam em sua energia curativa.', en: 'Elegant and serene, Florabun blooms from Hannabun when it has a strong affective bond and knows a Fairy-type move, using a Shiny Stone. Its steps are light and graceful, and it is said that its presence brings calm and renews the flowers around it. It usually lives in protected clearings, surrounded by other Pokémon that trust its healing energy.', es: 'Elegante y serena, Florabun florece de Hannabun cuando tiene un fuerte vínculo afectivo y conoce un movimiento de tipo Hada, usando una Piedra Día. Sus pasos son ligeros y gráciles, y se dice que su presencia trae calma y renueva las flores a su alrededor. Suele vivir en claros protegidos, rodeada de otros Pokémon que confían en su energía curativa.' }, height: "1.2 m", weight: "29.0 kg", ability: {pt: "Healing Bloom", en: "Healing Bloom", es: "Flor Curativa"}, abilityDescription: { pt: "Recupera uma pequena porção do HP de todos os aliados ao final de cada turno em batalha dupla ou tripla.", en: "Recovers a small portion of all allies' HP at the end of each turn in double or triple battles.", es: "Recupera una pequeña porción del PS de todos los aliados al final de cada turno en batallas dobles o triples." }, baseStats: { hp: 85, attack: 65, defense: 75, specialAttack: 95, specialDefense: 95, speed: 95 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@271c1d4921215cec4abfdc7dda0fefa8e0112b9c/Florabun%20card.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@271c1d4921215cec4abfdc7dda0fefa8e0112b9c/Gif%20Florabun.gif' },
+            { id: '031', name: { pt: 'Taibun', en: 'Taibun', es: 'Taibun' }, types: ['Grama', 'Lutador'], tcgCardUrl: null, description: { pt: 'Taibun evolui de Hannabun ao entrar em contato com uma Down Stone, desde que tenha amizade elevada e domine um golpe físico forte. Apesar de ser um parceiro gentil e leal, tem uma rixa antiga com os Starruffians, que vivem disputando território. Suas pernas ágeis e musculosas são capazes de derrubar inimigos enormes com apenas um golpe certeiro.', en: 'Taibun evolves from Hannabun when it comes into contact with a Dawn Stone, provided it has high friendship and has mastered a strong physical move. Despite being a gentle and loyal partner, it has an old rivalry with Starruffians, who constantly fight over territory. Its agile and muscular legs are capable of taking down huge enemies with a single, well-aimed blow.', es: 'Taibun evoluciona de Hannabun al entrar en contacto con una Piedra Alba, siempre que tenga una gran amistad y domine un movimiento físico fuerte. A pesar de ser un compañero gentil y leal, tiene una antigua rivalidad con los Starruffians, que viven disputando territorio. Sus ágiles y musculosas piernas son capaces de derribar enemigos enormes con un solo golpe certero.' }, height: "1.3 m", weight: "34.5 kg", ability: {pt: "Petal Jab", en: "Petal Jab", es: "Puya Pétalo"}, abilityDescription: { pt: "Aumenta a chance de causar um golpe crítico ao usar ataques físicos do tipo Lutador.", en: "Increases the chance of landing a critical hit when using physical Fighting-type moves.", es: "Aumenta la probabilidad de asestar un golpe crítico al usar ataques físicos de tipo Lucha." }, baseStats: { hp: 85, attack: 115, defense: 85, specialAttack: 45, specialDefense: 80, speed: 115 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@2dadcb4a8a1fb74db76bb2c7962312e466bf82fe/Taibun%20card.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@2dadcb4a8a1fb74db76bb2c7962312e466bf82fe/Gif%20Taibun.gif' },
+            { id: '032', name: { pt: 'Wooltino', en: 'Wooltino', es: 'Wooltino' }, types: ['Elétrico'], tcgCardUrl: null, description: { pt: 'Wooltino vive em regiões de altitude elevada, como penhascos e montanhas, onde o ar é rarefeito e as temperaturas extremas. Sua pelagem grossa e resistente o protege do frio e armazena eletricidade estática. Durante tempestades, é comum vê-lo soltando faíscas no ar e lançando raios em direção ao céu, em uma dança elétrica impressionante. Costuma viver em bandos pequenos e protegidos, e é extremamente leal aos treinadores que respeitam seu espaço e ritmo.', en: 'Wooltino lives in high-altitude regions, such as cliffs and mountains, where the air is thin and temperatures are extreme. Its thick, resistant fur protects it from the cold and stores static electricity. During storms, it is common to see it releasing sparks into the air and shooting lightning towards the sky in an impressive electrical dance. It usually lives in small, protected herds and is extremely loyal to trainers who respect its space and pace.', es: 'Wooltino vive en regiones de gran altitud, como acantilados y montañas, donde el aire es enrarecido y las temperaturas extremas. Su pelaje grueso y resistente lo protege del frío y almacena electricidad estática. Durante las tormentas, es común verlo soltando chispas al aire y lanzando rayos hacia el cielo en una impresionante danza eléctrica. Suele vivir en pequeñas y protegidas manadas, y es extremadamente leal a los entrenadores que respetan su espacio y ritmo.' }, height: "0.7 m", weight: "12.4 kg", ability: {pt: "Static Charge", en: "Static Charge", es: "Carga Estática"}, abilityDescription: { pt: "Quando Wooltino acumula energia em seu corpo, ele pode liberar pequenas descargas elétricas ao entrar em contato com o oponente, com chance de causar paralisia.", en: "When Wooltino accumulates energy in its body, it can release small electrical discharges upon contact with an opponent, with a chance to cause paralysis.", es: "Cuando Wooltino acumula energía en su cuerpo, puede liberar pequeñas descargas eléctricas al entrar en contacto con un oponente, con la posibilidad de causar parálisis." }, baseStats: { hp: 45, attack: 40, defense: 40, specialAttack: 40, specialDefense: 50, speed: 65 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@471032cf41b43e6352395eefd17103e60ba6b1ca/Card%20Wooltino.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@471032cf41b43e6352395eefd17103e60ba6b1ca/Wooltino%20GIF.gif' },
+            { id: '033', name: { pt: 'Zapachura', en: 'Zapachura', es: 'Zapachura' }, types: ['Elétrico'], tcgCardUrl: null, description: { pt: 'Zapachura são criaturas orgulhosas que habitam planaltos e encostas íngremes nas regiões frias de Glimora. Com um comportamento sereno e elegante, passam a maior parte do dia mastigando folhas duras enquanto observam o horizonte. Sua lã volumosa e incrivelmente macia é muito cobiçada por artesãos locais, que a utilizam para produzir casacos, luvas e gorros tradicionais. Quando ameaçadas, cospem bolas de energia elétrica em forma de projéteis, atingindo seus oponentes com força surpreendente.', en: 'Zapachura are proud creatures that inhabit plateaus and steep slopes in the cold regions of Glimora. With a serene and elegant demeanor, they spend most of the day chewing on tough leaves while observing the horizon. Their voluminous and incredibly soft wool is highly coveted by local artisans, who use it to produce traditional coats, gloves, and hats. When threatened, they spit balls of electrical energy in the form of projectiles, hitting their opponents with surprising force.', es: 'Los Zapachura son criaturas orgullosas que habitan mesetas y laderas empinadas en las frías regiones de Glimora. Con un comportamiento sereno y elegante, pasan la mayor parte del día masticando hojas duras mientras observan el horizonte. Su lana voluminosa e increíblemente suave es muy codiciada por los artesanos locales, que la utilizan para producir abrigos, guantes y gorros tradicionales. Cuando se sienten amenazados, escupen bolas de energía eléctrica en forma de proyectiles, golpeando a sus oponentes con una fuerza sorprendente.' }, height: "1.6 m", weight: "67.4 kg", ability: {pt: "High Current", en: "High Current", es: "Alta Corriente"}, abilityDescription: { pt: "Quando Zapachura sofre dano direto, há 30% de chance de causar paralisia no atacante.", en: "When Zapachura takes direct damage, there is a 30% chance of causing paralysis to the attacker.", es: "Cuando Zapachura recibe daño directo, hay un 30% de probabilidad de causar parálisis al atacante." }, baseStats: { hp: 95, attack: 65, defense: 80, specialAttack: 95, specialDefense: 85, speed: 80 }, cardImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@c97d0cc04bb41698e700ddae23f0198b9031a819/Card%20Zapachura.png', modalImageUrl: 'https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@c97d0cc04bb41698e700ddae23f0198b9031a819/Gif%20zapachura.gif' }
+        ];
+        
+        // Dados dos produtos da loja
+        const shopProducts = [
+            {
+                name: "Turtle partner Crewneck Sweatshirt",
+                imageUrl: "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/d84d0c498154b649d8eaff5defd443794b267ffb/Turtle%20partner%20Crewneck%20Sweatshirt.png?raw=true",
+                productUrl: "https://www.teepublic.com/crewneck-sweatshirt/78274367-turtle-partner",
+                price: "$35.00",
+                discountPrice: null
+            },
+            {
+                name: "The Young Fire Lizard Crewneck Sweatshirt",
+                imageUrl: "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/fa44713a68586fd6f3a971e228918dc7fe556152/lizard%20partner%20Crewneck%20Sweatshirt.png?raw=true",
+                productUrl: "https://www.teepublic.com/t-shirt/78282330-seedling-beast-the-sun-sourced-companion",
+                price: "$35.00",
+                discountPrice: null
+            },
+            {
+                name: "Seed Creature Crewneck Sweatshirt",
+                imageUrl: "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/f0c7821c8b30046393f11e8e60b3a06c63d68919/Seedling%20partner%20Crewneck%20Sweatshirt.png?raw=true",
+                productUrl: "https://www.teepublic.com/crewneck-sweatshirt/78282330-seedling-beast-the-sun-sourced-companion",
+                price: "$35.00",
+                discountPrice: null
+            },
+            {
+                name: "The Fire Lizard Crewneck Sweatshirt",
+                imageUrl: "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/de884025f5e71bffc436e91ecd05d107698bf48a/The%20Fire%20Lizard%20Crewneck%20Sweatshirt.png?raw=true",
+                productUrl: "https://www.teepublic.com/crewneck-sweatshirt/78396561-the-fire-lizard",
+                price: "$35.00",
+                discountPrice: null
+            },
+            {
+                name: "Armored Titan: The Hydro Cannon Crewneck Sweatshirt",
+                imageUrl: "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/bc834f99bb72e16d4869fa96ef249ae54b7083fa/Armored%20Titan%20The%20Hydro%20Cannon%20Crewneck%20Sweatshirt.png?raw=true",
+                productUrl: "https://www.teepublic.com/crewneck-sweatshirt/78431450-armored-titan-the-hydro-cannon",
+                price: "$35.00",
+                discountPrice: null
+            },
+            {
+                name: "Bloom Tyrant: The Solar Bloom Crewneck Sweatshirt",
+                imageUrl: "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/739692112a32c4f5ab316085b462c6376c7c1c8b/Bloom%20Tyrant%20The%20Solar%20Bloom%20Crewneck%20Sweatshirt.png?raw=true",
+                productUrl: "https://www.teepublic.com/crewneck-sweatshirt/78434314-bloom-tyrant-the-solar-bloom",
+                price: "$35.00",
+                discountPrice: null
+            }
+        ];
+
+        // Mapeamento de cores e fraquezas dos tipos
+        const typeColors = { 'Grama': '#7AC74C', 'Fogo': '#EA7A3C', 'Água': '#539AE2', 'Venenoso': '#A552CC', 'Normal': '#AAB09F', 'Lutador': '#CB5F48', 'Voador': '#7DA6DE', 'Fada': '#ED6EC7', 'Inseto': '#A8B820', 'Psíquico': '#F85888', 'Elétrico': '#F7D02C', 'Terra': '#E2BF65', 'Pedra': '#B6A136', 'Fantasma': '#735797', 'Gelo': '#96D9D6', 'Dragão': '#6F35FC', 'Sombrio': '#705746', 'Aço': '#B7B7CE' };
+        const typeChart = { 'Normal': { weak: ['Lutador'], resist: [], immune: ['Fantasma'] }, 'Fogo': { weak: ['Água', 'Terra', 'Pedra'], resist: ['Fogo', 'Grama', 'Inseto', 'Aço', 'Fada'], immune: [] }, 'Água': { weak: ['Elétrico', 'Grama'], resist: ['Fogo', 'Água', 'Gelo', 'Aço'], immune: [] }, 'Grama': { weak: ['Fogo', 'Gelo', 'Venenoso', 'Voador', 'Inseto'], resist: ['Água', 'Elétrico', 'Grama', 'Terra'], immune: [] }, 'Elétrico': { weak: ['Terra'], resist: ['Elétrico', 'Voador', 'Aço'], immune: [] }, 'Gelo': { weak: ['Fogo', 'Lutador', 'Pedra', 'Aço'], resist: ['Gelo'], immune: [] }, 'Lutador': { weak: ['Voador', 'Psíquico', 'Fada'], resist: ['Inseto', 'Pedra', 'Sombrio'], immune: [] }, 'Venenoso': { weak: ['Terra', 'Psíquico'], resist: ['Grama', 'Lutador', 'Venenoso', 'Inseto', 'Fada'], immune: [] }, 'Terra': { weak: ['Água', 'Grama', 'Gelo'], resist: ['Venenoso', 'Pedra'], immune: ['Elétrico'] }, 'Voador': { weak: ['Elétrico', 'Gelo', 'Pedra'], resist: ['Grama', 'Lutador', 'Inseto'], immune: ['Terra'] }, 'Psíquico': { weak: ['Inseto', 'Fantasma', 'Sombrio'], resist: ['Lutador', 'Psíquico'], immune: [] }, 'Inseto': { weak: ['Fogo', 'Voador', 'Pedra'], resist: ['Grama', 'Lutador', 'Terra'], immune: [] }, 'Pedra': { weak: ['Água', 'Grama', 'Lutador', 'Terra', 'Aço'], resist: ['Normal', 'Fogo', 'Venenoso', 'Voador'], immune: [] }, 'Fantasma': { weak: ['Fantasma', 'Sombrio'], resist: ['Venenoso', 'Inseto'], immune: ['Normal', 'Lutador'] }, 'Dragão': { weak: ['Gelo', 'Dragão', 'Fada'], resist: ['Fogo', 'Água', 'Elétrico', 'Grama'], immune: [] }, 'Sombrio': { weak: ['Lutador', 'Inseto', 'Fada'], resist: ['Fantasma', 'Sombrio'], immune: ['Psíquico'] }, 'Aço': { weak: ['Fogo', 'Lutador', 'Terra'], resist: ['Normal', 'Grama', 'Gelo', 'Voador', 'Psíquico', 'Inseto', 'Pedra', 'Dragão', 'Aço', 'Fada'], immune: ['Venenoso'] }, 'Fada': { weak: ['Venenoso', 'Aço'], resist: ['Lutador', 'Inseto', 'Sombrio'], immune: ['Dragão'] } };
+
+        // Variáveis de estado da aplicação
+        let currentLanguage = localStorage.getItem('pokedexLanguage') || 'pt';
+        let currentPokemonIndex = 0;
+        let synth;
+        let shopLoaded = false;
+
+        // ---------------------------------------------------------------------------------
+        // 2. SELETORES DE ELEMENTOS DO DOM
+        // ---------------------------------------------------------------------------------
+        const pokedexGrid = document.getElementById('pokedex-grid');
+        const pokemonModal = document.getElementById('pokemonModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const prevPokemonBtn = document.getElementById('prevPokemonBtn');
+        const nextPokemonBtn = document.getElementById('nextPokemonBtn');
+        const searchInput = document.getElementById('search-input');
+        const tcgContainer = document.getElementById('tcg-container');
+        
+        const coverSection = document.getElementById('cover-section');
+        const welcomeSection = document.getElementById('welcome-section');
+        const contentContainer = document.getElementById('content-container');
+        const pokedexContainer = document.getElementById('pokedex-container');
+        const shopContainer = document.getElementById('shop-container');
+
+        const navPokedexBtn = document.getElementById('nav-pokedex-btn-cover');
+        const navTcgBtn = document.getElementById('nav-tcg-btn-cover');
+        const navShopBtn = document.getElementById('nav-shop-btn-cover');
+        const backToHomeBtn = document.getElementById('back-to-home-btn');
+
+        const navPokedexBtnMobile = document.getElementById('nav-pokedex-btn-cover-mobile');
+        const navTcgBtnMobile = document.getElementById('nav-tcg-btn-cover-mobile');
+        const navShopBtnMobile = document.getElementById('nav-shop-btn-cover-mobile');
+
+        // Seletores para o conteúdo do Modal
+        const modalPokemonName = document.getElementById('modalPokemonName');
+        const modalPokemonNumber = document.getElementById('modalPokemonNumber');
+        const modalPokemonLore = document.getElementById('modalPokemonLore');
+        const modalPokemonHeight = document.getElementById('modalPokemonHeight');
+        const modalPokemonWeight = document.getElementById('modalPokemonWeight');
+        const modalPokemonAbility = document.getElementById('modalPokemonAbility');
+        const modalPokemonAbilityDescription = document.getElementById('modalPokemonAbilityDescription');
+        const statHp = document.getElementById('statHp');
+        const statAttack = document.getElementById('statAttack');
+        const statDefense = document.getElementById('statDefense');
+        const statSpecialAttack = document.getElementById('statSpecialAttack');
+        const statSpecialDefense = document.getElementById('statSpecialDefense');
+        const statSpeed = document.getElementById('statSpeed');
+        const statHpBar = document.getElementById('statHpBar');
+        const statAttackBar = document.getElementById('statAttackBar');
+        const statDefenseBar = document.getElementById('statDefenseBar');
+        const statSpecialAttackBar = document.getElementById('statSpecialAttackBar');
+        const statSpecialDefenseBar = document.getElementById('statSpecialDefenseBar');
+        const statSpeedBar = document.getElementById('statSpeedBar');
+
+        // ---------------------------------------------------------------------------------
+        // 3. FUNÇÕES DE UTILIDADE E LÓGICA
+        // ---------------------------------------------------------------------------------
+
+        /** Inicializa o contexto de áudio do Tone.js após a primeira interação do usuário. */
+        function initializeAudio() {
+            if (!synth && typeof Tone !== 'undefined' && Tone.context.state !== 'running') {
+                Tone.start().then(() => {
+                    synth = new Tone.Synth({
+                        oscillator: { type: 'square' },
+                        envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 },
+                        volume: -15
+                    }).toDestination();
+                }).catch(e => console.error("Erro ao iniciar Tone.js:", e));
+            } else if (!synth && typeof Tone !== 'undefined') {
+                 synth = new Tone.Synth({
+                    oscillator: { type: 'square' },
+                    envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 },
+                    volume: -15
+                }).toDestination();
+            } else if (typeof Tone === 'undefined') {
+                console.error("Tone.js não foi carregado.");
+            }
+        }
+
+        /** Toca um som de clique simples. */
+        function playClickSound() {
+            if (synth && typeof Tone !== 'undefined' && Tone.context.state === 'running') {
+                try {
+                    const now = Tone.now();
+                    synth.triggerAttackRelease("C4", "32n", now);
+                    synth.triggerAttackRelease("G4", "32n", now + 0.07);
+                } catch (error) {
+                    console.error("Erro ao tocar o som:", error);
+                }
+            }
+        }
+
+        /** Formata um número para ter 3 dígitos, ex: 1 -> "001". */
+        function formatId(num) {
+            return String(num).padStart(3, '0');
+        }
+
+        /** Retorna a cor hexadecimal para um determinado tipo de Pokémon. */
+        function getTypeColor(type) {
+            return typeColors[type] || '#6B7280';
+        }
+
+        /** Retorna o nome traduzido de um tipo de Pokémon. */
+        function getTranslatedTypeName(typeKey, lang) {
+            const translations = uiTranslations[lang] || uiTranslations.pt;
+            return (translations.typeNames && translations.typeNames[typeKey]) || typeKey;
+        }
+
+        /** Calcula as fraquezas de um Pokémon com base em seus tipos. */
+        function calculateWeaknesses(types) {
+            const multipliers = {};
+            const allTypes = Object.keys(typeChart);
+
+            allTypes.forEach(attackingType => {
+                let multiplier = 1;
+                types.forEach(defendingType => {
+                    if (typeChart[defendingType].weak.includes(attackingType)) {
+                        multiplier *= 2;
+                    }
+                    if (typeChart[defendingType].resist.includes(attackingType)) {
+                        multiplier *= 0.5;
+                    }
+                    if (typeChart[defendingType].immune.includes(attackingType)) {
+                        multiplier *= 0;
+                    }
+                });
+                if (multiplier > 1) {
+                    multipliers[attackingType] = multiplier;
+                }
+            });
+            return multipliers;
+        }
+        
+        /** Retorna a classe CSS para a barra de status com base no valor. */
+        function getStatBarClass(value) {
+            if (value < 50) return 'low';
+            if (value < 80) return 'medium';
+            if (value < 110) return 'high';
+            return 'very-high';
+        }
+
+        // ---------------------------------------------------------------------------------
+        // 4. FUNÇÕES DE RENDERIZAÇÃO E MANIPULAÇÃO DA UI
+        // ---------------------------------------------------------------------------------
+
+        /** Aplica as traduções a todos os elementos da UI. */
+        function applyUITranslations() {
+            const lang = uiTranslations[currentLanguage];
+            if (!lang) {
+                console.error(`Idioma ${currentLanguage} não encontrado.`);
+                return;
+            }
+            document.documentElement.lang = currentLanguage;
+            document.title = lang.pageTitle;
+
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (lang[key]) el.innerHTML = lang[key];
+            });
+             document.querySelectorAll('[data-translate-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-translate-placeholder');
+                if (lang[key]) el.placeholder = lang[key];
+            });
+            document.querySelectorAll('#language-selector .lang-btn, #language-selector-mobile .lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLanguage);
+            });
+        }
+        
+        /** Define o idioma atual, salva no localStorage e atualiza a UI. */
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('pokedexLanguage', lang);
+            applyUITranslations();
+            renderPokedex();
+            renderTcgGallery();
+            if (shopLoaded) {
+                renderShop();
+            }
+        }
+
+        /** Renderiza a grade da Pokédex com os Fakemons fornecidos. */
+        function renderPokedex(pokemonList = fakemons) {
+            pokedexGrid.innerHTML = '';
+            pokemonList.forEach(pokemon => {
+                const pokemonItem = document.createElement('div');
+                pokemonItem.className = 'pokemon-item';
+
+                const card = document.createElement('div');
+                card.className = 'base-pokemon-card rounded-xl relative';
+                card.classList.add(pokemon.isUnlisted ? 'unknown-pokemon-card' : 'pokemon-card');
+
+                const infoBlock = document.createElement('div');
+                infoBlock.className = 'pokemon-info-block';
+
+                const displayName = pokemon.isUnlisted 
+                    ? (uiTranslations[currentLanguage]?.unlistedFakemon || 'Não Catalogado')
+                    : (pokemon.name[currentLanguage] || pokemon.name.pt);
+
+                if (pokemon.isUnlisted) {
+                    card.innerHTML = `<div class="placeholder-content"><i class="fas fa-question-circle"></i></div>`;
+                    infoBlock.innerHTML = `
+                        <p class="pokemon-name-unlisted">${displayName}</p>
+                        <p class="pokemon-id-unlisted">#${pokemon.id}</p>`;
+                } else {
+                    card.innerHTML = `
+                        <div class="pokemon-image-area">
+                            <img loading="lazy" src="${pokemon.cardImageUrl}" alt="${displayName}" onerror="this.onerror=null;this.src='https://placehold.co/180x180/A9A9A9/ffffff?text=Error'">
+                        </div>`;
+                    infoBlock.innerHTML = `
+                        <h3 class="pokemon-name">${displayName}</h3>
+                        <div class="pokemon-types">
+                            ${pokemon.types.map(typeKey => `
+                                <span class="pokemon-type" style="background-color: ${getTypeColor(typeKey)};">
+                                    ${getTranslatedTypeName(typeKey, currentLanguage)}
+                                </span>`).join('')}
+                        </div>`;
+                    card.addEventListener('click', () => {
+                        playClickSound();
+                        currentPokemonIndex = fakemons.findIndex(f => f.id === pokemon.id);
+                        openPokemonModal(pokemon);
+                    });
+                }
+
+                pokemonItem.append(card, infoBlock);
+                pokedexGrid.appendChild(pokemonItem);
+            });
+        }
+
+        /** Renderiza a galeria TCG no formato carrossel. */
+        function renderTcgGallery() {
+            const tcgCards = fakemons.filter(f => f.tcgCardUrl);
+            const featuredCardImage = document.getElementById('featured-card-image');
+            const thumbnailCarousel = document.getElementById('thumbnail-carousel');
+
+            if (!featuredCardImage || !thumbnailCarousel) return;
+
+            if (tcgCards.length === 0) {
+                tcgContainer.innerHTML = `<div class="text-center py-20"><h2 class="text-3xl font-bold font-orbitron text-white" data-translate="tcgComingSoon">${uiTranslations[currentLanguage].tcgComingSoon}</h2></div>`;
+                return;
+            }
+
+            thumbnailCarousel.innerHTML = ''; // Limpa o carrossel
+
+            // Define a primeira carta como destaque
+            featuredCardImage.src = tcgCards[0].tcgCardUrl;
+            featuredCardImage.alt = `TCG Card - ${tcgCards[0].name[currentLanguage] || tcgCards[0].name.pt}`;
+
+            // Cria os thumbnails
+            tcgCards.forEach((card, index) => {
+                const thumbWrapper = document.createElement('div');
+                thumbWrapper.className = 'thumbnail-card';
+                if (index === 0) {
+                    thumbWrapper.classList.add('active');
+                }
+                thumbWrapper.innerHTML = `<img src="${card.tcgCardUrl}" alt="Thumbnail of ${card.name[currentLanguage] || card.name.pt}">`;
+                
+                thumbWrapper.addEventListener('click', () => {
+                    playClickSound();
+                    // Atualiza a imagem principal
+                    featuredCardImage.src = card.tcgCardUrl;
+                    featuredCardImage.alt = `TCG Card - ${card.name[currentLanguage] || card.name.pt}`;
+                    
+                    // Atualiza a classe 'active'
+                    const currentActive = document.querySelector('.thumbnail-card.active');
+                    if (currentActive) {
+                        currentActive.classList.remove('active');
+                    }
+                    thumbWrapper.classList.add('active');
+                });
+
+                thumbnailCarousel.appendChild(thumbWrapper);
+            });
+        }
+
+        
+        /** Renderiza a seção da loja com os produtos. */
+        function renderShop() {
+            const shopSection = document.getElementById('shop-section');
+            shopSection.innerHTML = '<div id="shop-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>';
+            const shopGrid = document.getElementById('shop-grid');
+            const translations = uiTranslations[currentLanguage] || uiTranslations.pt;
+
+            if (shopProducts.length === 0) {
+                shopGrid.innerHTML = '<p class="text-center text-xl col-span-full">Nenhum produto disponível no momento.</p>';
+                return;
+            }
+
+            shopProducts.forEach(product => {
+                const cardLink = document.createElement('a');
+                cardLink.href = product.productUrl;
+                cardLink.target = '_blank';
+                cardLink.rel = 'noopener noreferrer';
+                cardLink.className = 'product-card';
+
+                const priceHTML = product.discountPrice 
+                    ? `<span class="original-price">${product.price}</span> <span class="discount-price">${product.discountPrice}</span>`
+                    : `<span class="text-white font-semibold">${product.price}</span>`;
+
+                cardLink.innerHTML = `
+                    <div class="product-image-wrapper">
+                        <img loading="lazy" src="${product.imageUrl}" alt="${product.name}" class="product-image" onerror="this.onerror=null;this.src='https://placehold.co/400x400/333/fff?text=Imagem+Indisponível';">
+                    </div>
+                    <div class="product-info">
+                        <div>
+                            <h3 class="product-name">${product.name}</h3>
+                            <div class="product-pricing">${priceHTML}</div>
+                        </div>
+                        <div class="product-buy-button">${translations.shopViewButton}</div>
+                    </div>`;
+                shopGrid.appendChild(cardLink);
+            });
+        }
+
+        /** Carrega os dados da loja (se ainda não carregados) e renderiza. */
+        function loadShop() {
+            if (!shopLoaded) shopLoaded = true;
+            renderShop();
+        }
+
+        /** Alterna a visualização entre Pokédex, TCG e Loja. */
+        function switchView(view) {
+            playClickSound();
+            
+            coverSection.style.display = 'none';
+            welcomeSection.style.display = 'none';
+            contentContainer.style.display = 'block';
+
+            pokedexContainer.style.display = view === 'pokedex' ? 'block' : 'none';
+            tcgContainer.style.display = view === 'tcg' ? 'block' : 'none';
+            shopContainer.style.display = view === 'shop' ? 'block' : 'none';
+
+            if (view === 'tcg') renderTcgGallery();
+            if (view === 'shop') loadShop();
+        }
+
+        /** Retorna para a tela inicial. */
+        function showHome() {
+            playClickSound();
+            contentContainer.style.display = 'none';
+            coverSection.style.display = 'flex';
+            welcomeSection.style.display = 'block';
+        }
+
+        /** Preenche e exibe o modal com os detalhes de um Pokémon. */
+        function openPokemonModal(pokemon) {
+            if (!pokemon || pokemon.isUnlisted) return;
+
+            initializeAudio();
+
+            const lang = currentLanguage;
+            const name = pokemon.name[lang] || pokemon.name.pt;
+            
+            // Atualiza a imagem com um timestamp para recarregar GIFs animados
+            const imageWrapper = document.getElementById('modal-image-wrapper');
+            imageWrapper.innerHTML = `<img id="modalPokemonImage" class="modal-pokemon-image" alt="${name}" data-pokemon-id="${pokemon.id}" src="${pokemon.modalImageUrl}?t=${new Date().getTime()}" onerror="this.onerror=null;this.src='https://placehold.co/280x280/e0e0e0/ff0000?text=IMAGEM+FALHOU';">`;
+
+            // Preenche os dados básicos
+            modalPokemonName.textContent = name;
+            modalPokemonNumber.textContent = `#${pokemon.id}`;
+            modalPokemonLore.textContent = pokemon.description[lang] || pokemon.description.pt;
+            modalPokemonHeight.textContent = pokemon.height;
+            modalPokemonWeight.textContent = pokemon.weight;
+            modalPokemonAbility.textContent = pokemon.ability[lang] || pokemon.ability.pt;
+            modalPokemonAbilityDescription.textContent = pokemon.abilityDescription[lang] || pokemon.abilityDescription.pt;
+
+            // Preenche os tipos
+            const typesContainer = document.getElementById('modalPokemonTypes');
+            typesContainer.innerHTML = pokemon.types.map(typeKey => `
+                <span class="pokemon-type" style="background-color: ${getTypeColor(typeKey)};">
+                    ${getTranslatedTypeName(typeKey, lang)}
+                </span>`).join('');
+            
+            // Preenche as fraquezas
+            const weaknessSection = document.getElementById('modal-weakness-section');
+            const weaknesses = calculateWeaknesses(pokemon.types);
+            if(Object.keys(weaknesses).length > 0) {
+                weaknessSection.innerHTML = `
+                    <div class="weakness-title" data-translate="weaknessTitle">${uiTranslations[lang].weaknessTitle}</div>
+                    <div class="weakness-types">
+                        ${Object.entries(weaknesses).map(([type, multiplier]) => `
+                            <span class="pokemon-type" style="background-color: ${getTypeColor(type)};">
+                                ${getTranslatedTypeName(type, lang)} ${multiplier}x
+                            </span>`).join('')}
+                    </div>`;
+            } else {
+                weaknessSection.innerHTML = '';
+            }
+
+            // Preenche as barras de status
+            const stats = pokemon.baseStats || {};
+            const maxStatValue = 255;
+            const statElements = {
+                hp: { val: statHp, bar: statHpBar },
+                attack: { val: statAttack, bar: statAttackBar },
+                defense: { val: statDefense, bar: statDefenseBar },
+                specialAttack: { val: statSpecialAttack, bar: statSpecialAttackBar },
+                specialDefense: { val: statSpecialDefense, bar: statSpecialDefenseBar },
+                speed: { val: statSpeed, bar: statSpeedBar }
+            };
+
+            for (const [key, el] of Object.entries(statElements)) {
+                const statValue = stats[key] || 0;
+                el.val.textContent = statValue;
+                el.bar.style.width = `${(statValue / maxStatValue) * 100}%`;
+                el.bar.className = `stat-bar ${getStatBarClass(statValue)}`;
+            }
+
+            // Controla a visibilidade dos botões de navegação do modal
+            let prevNavigableIndex = fakemons.findIndex((f, i) => i < currentPokemonIndex && !f.isUnlisted);
+            let nextNavigableIndex = fakemons.findIndex((f, i) => i > currentPokemonIndex && !f.isUnlisted);
+            prevPokemonBtn.style.display = prevNavigableIndex !== -1 ? 'flex' : 'none';
+            nextPokemonBtn.style.display = nextNavigableIndex !== -1 ? 'flex' : 'none';
+            
+            // Exibe o modal e foca para acessibilidade
+            pokemonModal.classList.add('show');
+            pokemonModal.querySelector('.modal-content').focus({ preventScroll: true });
+        }
+
+        /** Fecha o modal de detalhes do Pokémon. */
+        function closePokemonModal() {
+            pokemonModal.classList.remove('show');
+        }
+
+        /** Navega para o próximo Pokémon catalogado no modal. */
+        function showNextPokemon() {
+            let nextIndex = fakemons.findIndex((f, i) => i > currentPokemonIndex && !f.isUnlisted);
+            if (nextIndex !== -1) {
+                playClickSound();
+                currentPokemonIndex = nextIndex;
+                openPokemonModal(fakemons[currentPokemonIndex]);
+            }
+        }
+
+        /** Navega para o Pokémon catalogado anterior no modal. */
+        function showPrevPokemon() {
+            let prevIndex = -1;
+            for(let i = currentPokemonIndex - 1; i >= 0; i--) {
+                if(!fakemons[i].isUnlisted) {
+                    prevIndex = i;
+                    break;
+                }
+            }
+            if (prevIndex !== -1) {
+                playClickSound();
+                currentPokemonIndex = prevIndex;
+                openPokemonModal(fakemons[currentPokemonIndex]);
+            }
+        }
+
+        // ---------------------------------------------------------------------------------
+        // 5. INICIALIZAÇÃO E EVENT LISTENERS
+        // ---------------------------------------------------------------------------------
+
+        /** Preenche a lista de Fakemons com placeholders e ordena. */
+        function setupFakemonList() {
+            const totalCards = 150;
+            const existingIds = new Set(fakemons.map(f => f.id));
+            for (let i = 1; i <= totalCards; i++) {
+                const currentId = formatId(i);
+                if (!existingIds.has(currentId)) {
+                    fakemons.push({
+                        id: currentId,
+                        name: { pt: "Não Catalogado", en: "Unlisted", es: "No Catalogado" },
+                        isUnlisted: true,
+                        types: [], description: {}, height: '', weight: '',
+                        ability: {}, abilityDescription: {},
+                        baseStats: {}, cardImageUrl: '', modalImageUrl: ''
+                    });
+                }
+            }
+            fakemons.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+        }
+
+        // Adiciona os listeners de eventos
+        document.addEventListener('DOMContentLoaded', () => {
+            setupFakemonList();
+            setLanguage(currentLanguage); // Aplica idioma e renderiza tudo
+        });
+
+        // Listeners de navegação principal
+        navPokedexBtn.addEventListener('click', () => switchView('pokedex'));
+        navTcgBtn.addEventListener('click', () => switchView('tcg'));
+        navShopBtn.addEventListener('click', () => switchView('shop'));
+        navPokedexBtnMobile.addEventListener('click', () => switchView('pokedex'));
+        navTcgBtnMobile.addEventListener('click', () => switchView('tcg'));
+        navShopBtnMobile.addEventListener('click', () => switchView('shop'));
+        backToHomeBtn.addEventListener('click', showHome);
+
+        // Listener para o campo de busca
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            const filteredFakemons = fakemons.filter(pokemon => {
+                if (pokemon.isUnlisted && searchTerm) return false;
+                if (!searchTerm) return true;
+                const name = (pokemon.name[currentLanguage] || pokemon.name.pt).toLowerCase();
+                return name.includes(searchTerm) || pokemon.id.includes(searchTerm);
+            });
+            renderPokedex(filteredFakemons);
+        });
+
+        // Listeners para o seletor de idioma
+        document.querySelectorAll('.lang-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                setLanguage(button.getAttribute('data-lang'));
+            });
+        });
+        
+        // Listeners para o modal
+        closeModalBtn.addEventListener('click', closePokemonModal);
+        pokemonModal.addEventListener('click', (e) => {
+            if (e.target === pokemonModal) closePokemonModal();
+        });
+        prevPokemonBtn.addEventListener('click', showPrevPokemon);
+        nextPokemonBtn.addEventListener('click', showNextPokemon);
+        document.addEventListener('keydown', (e) => {
+            if (pokemonModal.classList.contains('show')) {
+                if (e.key === 'Escape') closePokemonModal();
+                else if (e.key === 'ArrowRight') showNextPokemon();
+                else if (e.key === 'ArrowLeft') showPrevPokemon();
+            }
+        });
+
+        // Listener para inicializar o áudio com qualquer clique
+        document.body.addEventListener('click', initializeAudio, { once: true });
+
+    </script>
+</body>
+</html>
