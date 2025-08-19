@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -5,14 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokedex de Glimora</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.\.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- CORREÇÃO: Corrigido o link para o Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         /* Estilos personalizados */
-        body {
+        html {
             background-color: #1a1a2e; /* Cor de fundo escura para o site */
+        }
+        body {
+            background-color: transparent; /* Adicionado para resolver conflito de fundo */
             font-family: 'Inter', sans-serif; /* Fonte principal */
             color: #e0e0e0; /* Cor do texto padrão */
         }
@@ -410,17 +415,22 @@
 
         .modal-pokemon-image[data-pokemon-id="020"] { transform: scale(1.5); }
         .modal-pokemon-image[data-pokemon-id="022"] { transform: scale(2.5); }
-        .modal-pokemon-image[data-pokemon-id="023"],
-        .modal-pokemon-image[data-pokemon-id="024"],
+        /* AJUSTE DE ZOOM: Spynodile e Finlance */
+        .modal-pokemon-image[data-pokemon-id="023"] { transform: scale(1.15); }
+        .modal-pokemon-image[data-pokemon-id="024"] { transform: scale(1.0); }
         .modal-pokemon-image[data-pokemon-id="025"],
         .modal-pokemon-image[data-pokemon-id="026"] { transform: scale(1.25); }
         .modal-pokemon-image[data-pokemon-id="027"] { transform: scale(1.5); }
         .modal-pokemon-image[data-pokemon-id="028"] { transform: scale(1.2); }
-        .modal-pokemon-image[data-pokemon-id="031"] { transform: scale(1.1); }
+        /* AJUSTE DE ZOOM: Hannabun */
+        .modal-pokemon-image[data-pokemon-id="029"] { transform: scale(1.1); }
+        /* AJUSTE DE ZOOM: Taibun */
+        .modal-pokemon-image[data-pokemon-id="031"] { transform: scale(1.0); }
         .modal-pokemon-image[data-pokemon-id="032"] { transform: scale(1.0); }
         .modal-pokemon-image[data-pokemon-id="033"] { transform: scale(1.15); }
         /* CORREÇÃO: Adicionada regra para afastar o GIF do Quatini */
         .modal-pokemon-image[data-pokemon-id="034"] { transform: scale(1.0); }
+        .modal-pokemon-image[data-pokemon-id="036"] { transform: scale(1.1); }
 
 
         .modal-pokemon-types { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; }
@@ -643,6 +653,20 @@
         }
 
     </style>
+<script type="importmap">
+{
+  "imports": {
+    "marked": "https://esm.sh/marked@^16.2.0",
+    "zod": "https://esm.sh/zod@^4.0.17",
+    "lit/": "https://esm.sh/lit@^3.3.1/",
+    "lit": "https://esm.sh/lit@^3.3.1",
+    "@googlemaps/js-api-loader": "https://esm.sh/@googlemaps/js-api-loader@^1.16.10",
+    "marked-highlight": "https://esm.sh/marked-highlight@^2.2.2",
+    "highlight.js": "https://esm.sh/highlight.js@^11.11.1",
+    "@modelcontextprotocol/sdk/": "https://esm.sh/@modelcontextprotocol/sdk@^1.17.3/dist/esm/"
+  }
+}
+</script>
 </head>
 <body class="min-h-screen flex flex-col">
     
@@ -707,8 +731,8 @@
             <section id="welcome-section" class="text-center text-white py-10">
                 <h1 data-translate="welcomeTitle" class="text-4xl md:text-5xl font-bold font-orbitron mb-4" style="text-shadow: 0 0 15px #87ceeb, 0 0 10px #ffc0cb;">Bem-vindo à Glimora</h1>
                 <div class="max-w-4xl mx-auto">
-                    <p data-translate="welcomeSubtitle" class="text-2xl font-bold font-orbitron mb-8">
-                        Seja bem-vindo à sua próxima jornada. Glimora está cheia de histórias esperando para serem contadas — e a sua pode começar agora.
+                    <p data-translate="welcomeSubtitle" class="text-lg md:text-xl mb-8">
+                        Sua jornada por Glimora começa agora! Explore a Pokédex, descubra as cartas TCG e, ao final do seu passeio, não se esqueça de visitar nossa loja para nos ajudar a continuar crescendo.
                     </p>
                 </div>
             </section>
@@ -863,7 +887,7 @@
             pt: {
                 pageTitle: "Pokedex de Glimora",
                 welcomeTitle: "Bem-vindo à Glimora",
-                welcomeSubtitle: "Seja bem-vindo à sua próxima jornada. Glimora está cheia de histórias esperando para serem contadas — e a sua pode começar agora.",
+                welcomeSubtitle: "Sua jornada por Glimora começa agora! Explore a Pokédex, descubra as cartas TCG e, ao final do seu passeio, não se esqueça de visitar nossa loja para nos ajudar a continuar crescendo.",
                 searchPlaceholder: "Buscar por nome ou nº...",
                 footerText: "&copy; 2025 Pokedex de Glimora. Todos os direitos reservados.",
                 navPokedex: "Pokédex",
@@ -895,7 +919,7 @@
             en: {
                 pageTitle: "Glimora Pokedex",
                 welcomeTitle: "Welcome to Glimora",
-                welcomeSubtitle: "Welcome to your next journey. Glimora is full of stories waiting to be told — and yours can begin now.",
+                welcomeSubtitle: "Your journey through Glimora starts now! Explore the Pokédex, discover the TCG cards, and at the end of your tour, don't forget to visit our shop to help us keep growing.",
                 searchPlaceholder: "Search by name or #...",
                 footerText: "&copy; 2025 Glimora Pokedex. All rights reserved.",
                 navPokedex: "Pokédex",
@@ -927,7 +951,7 @@
             es: {
                 pageTitle: "Pokedex de Glimora",
                 welcomeTitle: "Bienvenido a Glimora",
-                welcomeSubtitle: "Bienvenido a tu próxima jornada. Glimora está llena de historias esperando ser contadas — y la tuya puede comenzar ahora.",
+                welcomeSubtitle: "¡Tu viaje por Glimora comienza ahora! Explora la Pokédex, descubre las cartas TCG y, al final de tu recorrido, no olvides visitar nuestra tienda para ayudarnos a seguir creciendo.",
                 searchPlaceholder: "Buscar por nombre o nº...",
                 footerText: "&copy; 2025 Pokedex de Glimora. Todos los direitos reservados.",
                 navPokedex: "Pokédex",
@@ -994,12 +1018,13 @@
           { "id": "032", "name": { "pt": "Wooltino", "en": "Wooltino", "es": "Wooltino" }, "types": [ "Elétrico" ], "tcgCardUrl": null, "description": { "pt": "Wooltino vive em regiões de altitude elevada, como penhascos e montanhas, onde o ar é rarefeito e as temperaturas extremas. Sua pelagem grossa e resistente o protege do frio e armazena eletricidade estática. Durante tempestades, é comum vê-lo soltando faíscas no ar e lançando raios em direção ao céu, em uma dança elétrica impressionante. Costuma viver em bandos pequenos e protegidos, e é extremamente leal aos treinadores que respeitam seu espaço e ritmo.", "en": "Wooltino lives in high-altitude regions, such as cliffs and mountains, where the air is thin and temperatures are extreme. Its thick, resistant fur protects it from the cold and stores static electricity. During storms, it is common to see it releasing sparks into the air and shooting lightning towards the sky in an impressive electrical dance. It usually lives in small, protected herds and is extremely loyal to trainers who respect its space and pace.", "es": "Wooltino vive en regiones de gran altitud, como acantilados y montañas, donde el aire es enrarecido y las temperaturas extremas. Su pelaje grueso y resistente lo protege del frío y almacena electricidad estática. Durante las tormentas, es común verlo soltando chispas al aire y lanzando rayos hacia el cielo en una impresionante danza eléctrica. Suele vivir en pequeñas y protegidas manadas, y es extremadamente leal a los entrenadores que respetan su espacio y ritmo." }, "height": "0.7 m", "weight": "12.4 kg", "ability": { "pt": "Static Charge", "en": "Static Charge", "es": "Carga Estática" }, "abilityDescription": { "pt": "Quando Wooltino acumula energia em seu corpo, ele pode liberar pequenas descargas elétricas ao entrar em contato com o oponente, com chance de causar paralisia.", "en": "When Wooltino accumulates energy in its body, it can release small electrical discharges upon contact with an opponent, with a chance to cause paralysis.", "es": "Cuando Wooltino acumula energía en su cuerpo, puede liberar pequeñas descargas eléctricas al entrar en contacto con un oponente, con la posibilidad de causar parálisis." }, "baseStats": { "hp": 45, "attack": 40, "defense": 40, "specialAttack": 40, "specialDefense": 50, "speed": 65 }, "cardImageUrl": "https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@471032cf41b43e6352395eefd17103e60ba6b1ca/Card%20Wooltino.png", "modalImageUrl": "https://cdn.jsdelivr.net/gh/Glimoradex/Wiki-Glimora-Fakedex@471032cf41b43e6352395eefd17103e60ba6b1ca/Wooltino%20GIF.gif" },
           { "id": "033", "name": { "pt": "Zapachura", "en": "Zapachura", "es": "Zapachura" }, "types": [ "Elétrico" ], "tcgCardUrl": null, "description": { "pt": "Zapachura são criaturas orgulhosas que habitam planaltos e encostas íngremes nas regiões frias de Glimora. Com um comportamento sereno e elegante, passam a maior parte do dia mastigando folhas duras enquanto observam o horizonte. Sua lã volumosa e incrivelmente macia é muito cobiçada por artesãos locais, que a utilizam para produzir casacos, luvas e gorros tradicionais. Quando ameaçadas, cospem bolas de energia elétrica em forma de projéteis, atingindo seus oponentes com força surpreendente.", "en": "Zapachura are proud creatures that inhabit plateaus and steep slopes in the cold regions of Glimora. With a serene and elegant demeanor, they spend most of the day chewing on tough leaves while observing the horizon. Their voluminous and incredibly soft wool is highly coveted by local artisans, who use it to produce traditional coats, gloves, and hats. When threatened, they spit balls of electrical energy in the form of projectiles, hitting their opponents with surprising force.", "es": "Los Zapachura son criaturas orgullosas que habitan mesetas y laderas empinadas en las frías regiones de Glimora. Con un comportamiento sereno y elegante, pasan la mayor parte del día masticando hojas duras mientras observan el horizonte. Su lana voluminosa e increíblemente suave es muy codiciada por los artesanos locales, que la utilizan para producir abrigos, guantes y gorros tradicionales. Cuando se sienten amenazados, escupen bolas de energía eléctrica en forma de proyectiles, golpeando a sus oponentes con una fuerza sorprendente." }, "height": "1.6 m", "weight": "67.4 kg", "ability": { "pt": "High Current", "en": "High Current", "es": "Alta Corriente" }, "abilityDescription": { "pt": "Quando Zapachura sofre dano direto, há 30% de chance de causar paralisia no atacante.", "en": "When Zapachura takes direct damage, there is a 30% chance of causing paralysis to the attacker.", "es": "Cuando Zapachura recibe daño directo, hay un 30% de probabilidad de causar parálisis al atacante." }, "baseStats": { "hp": 95, "attack": 65, "defense": 80, "specialAttack": 95, "specialDefense": 85, "speed": 80 }, "cardImageUrl": "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/c97d0cc04bb41698e700ddae23f0198b9031a819/Card%20Zapachura.png?raw=true", "modalImageUrl": "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/c97d0cc04bb41698e700ddae23f0198b9031a819/Gif%20zapachura.gif?raw=true" },
           { "id": "034", "name": { "pt": "Quatini", "en": "Quatini", "es": "Quatini" }, "types": [ "Normal" ], "tcgCardUrl": null, "description": { "pt": "Curioso por natureza, passa o dia farejando e explorando em busca de comida. A cauda erguida serve como um sinal para que os membros de seu bando nunca se percam uns dos outros.", "en": "Curious by nature, it spends its day sniffing and exploring in search of food. Its raised tail serves as a signal so that members of its pack never get lost from each other.", "es": "Curioso por naturaleza, pasa el día olfateando y explorando en busca de comida. Su cola levantada sirve como señal para que los miembros de su manada nunca se pierdan unos de otros." }, "height": "0,6 m", "weight": "8,4 kg", "ability": { "pt": "Berry Tracker", "en": "Berry Tracker", "es": "Rastreador de Bayas" }, "abilityDescription": { "pt": "Com seu olfato apurado, este Pokémon fareja e identifica a berry segurada por um oponente. Além disso, o efeito de cura de qualquer berry que Quatini consumir é aumentado em 50%.", "en": "With its keen sense of smell, this Pokémon sniffs out and identifies the berry held by an opponent. Additionally, the healing effect of any berry Quatini consumes is increased by 50%.", "es": "Con su agudo olfato, este Pokémon olfatea e identifica la baya que sostiene un oponente. Además, el efecto curativo de cualquier baya que Quatini consuma aumenta en un 50%." }, "baseStats": { "hp": 48, "attack": 52, "defense": 42, "specialAttack": 38, "specialDefense": 40, "speed": 60 }, "cardImageUrl": "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/e98fb1dbb8b60b604414518f17a1b6447c2de42e/Quatini%20Card.png", "modalImageUrl": "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/e98fb1dbb8b60b604414518f17a1b6447c2de42e/GIF%20Quatini.gif" },
-          { "id": "035", "name": { "pt": "Coatumbra", "en": "Coatumbra", "es": "Coatumbra" }, "types": [ "Normal", "Sombrio" ], "tcgCardUrl": null, "description": { "pt": "Adaptado para prosperar na escuridão, sua visão é limitada, mas compensada por um olfato que rastreia presas a quilômetros de distância. Ele usa sua longa e poderosa língua como um chicote para incapacitar oponentes e suas garras fortes para quebrar rochas.", "en": "Adapted to thrive in darkness, its vision is limited but compensated by a sense of smell that tracks prey from miles away. It uses its long and powerful tongue like a whip to incapacitate opponents and its strong claws to break rocks.", "es": "Adaptado para prosperar en la oscuridad, su visión es limitada pero se compensa con un olfato que rastrea presas a kilómetros de distancia. Utiliza su larga y poderosa lengua como un látigo para incapacitar a los oponentes y sus fuertes garras para romper rocas." }, "height": "1,4 m", "weight": "45,5 kg", "ability": { "pt": "Olfato Apurado", "en": "Precise Scent", "es": "Olfato Preciso" }, "abilityDescription": { "pt": "Graças ao seu olfato extraordinário, os ataques deste Pokémon ignoram qualquer aumento na evasão do oponente. Além disso, seus movimentos nunca erram um alvo que já esteja com menos de 1/3 do seu HP máximo.", "en": "Thanks to its extraordinary sense of smell, this Pokémon's attacks ignore any increase in the opponent's evasion. Furthermore, its moves never miss a target that is already below 1/3 of its maximum HP.", "es": "Gracias a su extraordinario olfato, los ataques de este Pokémon ignoran cualquier aumento en la evasión del oponente. Además, sus movimientos nunca fallan contra un objetivo que ya está por debajo de 1/3 de su HP máximo." }, "baseStats": { "hp": 85, "attack": 120, "defense": 80, "specialAttack": 60, "specialDefense": 75, "speed": 105 }, "cardImageUrl": "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/e98fb1dbb8b60b604414518f17a1b6447c2de42e/Card%20Coatumbra.png", "modalImageUrl": "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/e98fb1dbb8b60b604414518f17a1b6447c2de42e/GIF%20Coatumbra.gif" }
+          { "id": "035", "name": { "pt": "Coatumbra", "en": "Coatumbra", "es": "Coatumbra" }, "types": [ "Normal", "Sombrio" ], "tcgCardUrl": null, "description": { "pt": "Adaptado para prosperar na escuridão, sua visão é limitada, mas compensada por um olfato que rastreia presas a quilômetros de distância. Ele usa sua longa e poderosa língua como um chicote para incapacitar oponentes e suas garras fortes para quebrar rochas.", "en": "Adapted to thrive in darkness, its vision is limited but compensated by a sense of smell that tracks prey from miles away. It uses its long and powerful tongue like a whip to incapacitate opponents and its strong claws to break rocks.", "es": "Adaptado para prosperar en la oscuridad, su visión es limitada pero se compensa con un olfato que rastrea presas a kilómetros de distancia. Utiliza su larga y poderosa lengua como un látigo para incapacitar a los oponentes y sus fuertes garras para romper rocas." }, "height": "1,4 m", "weight": "45,5 kg", "ability": { "pt": "Olfato Apurado", "en": "Precise Scent", "es": "Olfato Preciso" }, "abilityDescription": { "pt": "Graças ao seu olfato extraordinário, os ataques deste Pokémon ignoram qualquer aumento na evasão do oponente. Além disso, seus movimentos nunca erram um alvo que já esteja com menos de 1/3 do seu HP máximo.", "en": "Thanks to its extraordinary sense of smell, this Pokémon's attacks ignore any increase in the opponent's evasion. Furthermore, its moves never miss a target that is already below 1/3 of its maximum HP.", "es": "Gracias a su extraordinario olfato, los ataques de este Pokémon ignoran cualquier aumento en la evasión del oponente. Además, sus movimientos nunca fallan contra un objetivo que ya está por debajo de 1/3 de su HP máximo." }, "baseStats": { "hp": 85, "attack": 120, "defense": 80, "specialAttack": 60, "specialDefense": 75, "speed": 105 }, "cardImageUrl": "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/e98fb1dbb8b60b604414518f17a1b6447c2de42e/Card%20Coatumbra.png", "modalImageUrl": "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/e98fb1dbb8b60b604414518f17a1b6447c2de42e/GIF%20Coatumbra.gif" },
+          { "id": "036", "name": { "pt": "Terradillo", "en": "Terradillo", "es": "Terradillo" }, "types": [ "Terra" ], "tcgCardUrl": null, "description": { "pt": "Um escavador incansável, conhecido por criar complexas redes de túneis por entre montanhas e cavernas. Apesar de seu tamanho, sua cauda termina em uma esfera densa e pesada, que ele balança como uma maça para pulverizar rochas com até três vezes o seu próprio peso.", "en": "A tireless digger, known for creating complex tunnel networks through mountains and caves. Despite its size, its tail ends in a dense, heavy sphere, which it swings like a mace to pulverize rocks up to three times its own weight.", "es": "Un excavador incansable, conocido por crear complejas redes de túneles a través de montañas y cuevas. A pesar de su tamaño, su cola termina en una esfera densa y pesada, que balancea como una maza para pulverizar rocas de hasta tres veces su propio peso." }, "height": "1.1 m", "weight": "75.0 kg", "ability": { "pt": "Quebra-Rocha", "en": "Rock Crusher", "es": "Quiebra-Rocas" }, "abilityDescription": { "pt": "Os movimentos de contato deste Pokémon são tão potentes que quebram as barreiras do oponente. Ao atingir o alvo com um ataque físico, ele remove os efeitos de Reflect, Light Screen e Aurora Veil do campo do adversário.", "en": "This Pokémon's contact moves are so powerful that they break the opponent's barriers. Upon hitting the target with a physical attack, it removes the effects of Reflect, Light Screen, and Aurora Veil from the opponent's field.", "es": "Los movimientos de contacto de este Pokémon son tan potentes que rompen las barreras del oponente. Al golpear al objetivo con un ataque físico, elimina los efectos de Reflejo, Pantalla de Luz y Velo Aurora del campo del adversário." }, "baseStats": { "hp": 90, "attack": 115, "defense": 125, "specialAttack": 40, "specialDefense": 65, "speed": 45 }, "cardImageUrl": "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/803fd3b3f0240d48ce5961a5fc4652d045d2d0f3/Card%20Terradillo.png", "modalImageUrl": "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/803fd3b3f0240d48ce5961a5fc4652d045d2d0f3/GIF%20terradillo.gif" }
         ];
 
         const shopProducts = [
             { name: "Turtle partner Crewneck Sweatshirt", imageUrl: "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/d84d0c498154b649d8eaff5defd443794b267ffb/Turtle%20partner%20Crewneck%20Sweatshirt.png?raw=true", productUrl: "https://www.teepublic.com/crewneck-sweatshirt/78274367-turtle-partner", price: "$35.00", discountPrice: null },
-            { name: "The Young Fire Lizard Crewneck Sweatshirt", imageUrl: "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/fa44713a68586fd6f3a971e228918dc7fe556152/lizard%20partner%20Crewneck%20Sweatshirt.png?raw=true", productUrl: "https://www.teepublic.com/t-shirt/78282330-seedling-beast-the-sun-sourced-companion", price: "$35.00", discountPrice: null },
+            { name: "The Young Fire Lizard Crewneck Sweatshirt", imageUrl: "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/fa44713a68586fd6f3a971e228918dc7fe556152/lizard%20partner%20Crewneck%20Sweatshirt.png?raw=true", productUrl: "https://www.teepublic.com/crewneck-sweatshirt/79007159-the-young-fire-lizard", price: "$35.00", discountPrice: null },
             { name: "Seed Creature Crewneck Sweatshirt", imageUrl: "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/f0c7821c8b30046393f11e8e60b3a06c63d68919/Seedling%20partner%20Crewneck%20Sweatshirt.png?raw=true", productUrl: "https://www.teepublic.com/crewneck-sweatshirt/78282330-seedling-beast-the-sun-sourced-companion", price: "$35.00", discountPrice: null },
             { name: "The Fire Lizard Crewneck Sweatshirt", imageUrl: "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/de884025f5e71bffc436e91ecd05d107698bf48a/The%20Fire%20Lizard%20Crewneck%20Sweatshirt.png?raw=true", productUrl: "https://www.teepublic.com/crewneck-sweatshirt/78396561-the-fire-lizard", price: "$35.00", discountPrice: null },
             { name: "Armored Titan: The Hydro Cannon Crewneck Sweatshirt", imageUrl: "https://raw.githubusercontent.com/Glimoradex/Wiki-Glimora-Fakedex/bc834f99bb72e16d4869fa96ef249ae54b7083fa/Armored%20Titan%20The%20Hydro%20Cannon%20Crewneck%20Sweatshirt.png?raw=true", productUrl: "https://www.teepublic.com/crewneck-sweatshirt/78431450-armored-titan-the-hydro-cannon", price: "$35.00", discountPrice: null },
@@ -1386,3 +1411,4 @@
     </script>
 </body>
 </html>
+```
